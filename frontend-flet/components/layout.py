@@ -56,7 +56,7 @@ class Layout:
 
             controls=[
 
-                self.sidebar.build(),
+                self.sidebar,
 
                 self.content
 
