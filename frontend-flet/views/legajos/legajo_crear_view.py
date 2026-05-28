@@ -360,10 +360,6 @@ class CrearLegajoView(ft.Container):
             self.ddl_modalidad.error_text = "Seleccione modalidad"
             valido = False
         
-        if not self.ddl_banco.value:
-            self.ddl_banco.error_text = "Seleccione un banco"
-            valido = False
-
         self.page_ref.update()
 
         return valido

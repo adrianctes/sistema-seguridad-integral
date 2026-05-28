@@ -223,7 +223,6 @@ class HistoriaLaboralModal:
         )
 
     async def abrir(self, legajo_id: int, e=None):
-        print(legajo_id)
         self.legajo_id = legajo_id
 
         self.limpiar()

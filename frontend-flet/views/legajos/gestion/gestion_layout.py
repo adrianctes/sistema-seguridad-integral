@@ -1,7 +1,7 @@
 import flet as ft
 
-from views.legajos.gestion.legajo_sidebar_view import Sidebar
-from views.legajos.gestion.editar_view import EditarLegajoView
+from views.legajos.gestion.gestion_sidebar_view import Sidebar
+from views.legajos.gestion.editar_legajo_view import EditarLegajoView
 from views.legajos.gestion.licencias_view import LicenciasView
 from views.legajos.gestion.historia_laboral.historia_laboral_view import HistoriaLaboralView
 from views.legajos.gestion.familiares_view import FamiliaresView
@@ -19,6 +19,9 @@ class GestionLegajoLayout(ft.Container):
         self.current_key = "editar"
 
         self.legajo_id = None
+
+        self.ayn = ""
+
 
         # =========================
         # VIEWS
@@ -49,7 +52,7 @@ class GestionLegajoLayout(ft.Container):
             self.change_view
         )
 
-        self.sidebar_view = self.sidebar.build()
+        self.sidebar_view = self.sidebar
 
         # =========================
         # MAIN
@@ -107,3 +110,16 @@ class GestionLegajoLayout(ft.Container):
 
         # abrir editar por defecto
         self.change_view("editar")
+    
+    def set_legajo(self, legajo):
+
+        self.legajo_id = legajo["id"]
+
+        self.ayn = f"{legajo['apellido']} {legajo['nombre']}"
+
+        self.sidebar_view.set_ayn(self.ayn)
+
+        if self.page_ref:
+            self.page_ref.update()
+
+        

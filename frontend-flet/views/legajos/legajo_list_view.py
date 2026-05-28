@@ -489,7 +489,7 @@ class LegajosView(ft.Container):
                                         height=30,
                                         icon=ft.Icons.VISIBILITY_OUTLINED,
                                         content=ft.Text(
-                                            "Ver detalle",
+                                            "Gestionar legajo",
                                             size=11
                                         ),
                                         on_click=lambda e, item=item:
@@ -675,12 +675,8 @@ class LegajosView(ft.Container):
     async def abrir_detalle(self, item):
         #gestion = self.page_ref.layout.views["gestion_legajo"]
         gestion = self.page_ref.layout.views.get('gestion_legajo')
-
-        gestion.legajo_id = item["id"]
-
-        self.page_ref.layout.change_view(
-            "gestion_legajo"
-        )
+        gestion.set_legajo(item)
+        self.page_ref.layout.change_view("gestion_legajo" )
 
         await gestion.load()
     
