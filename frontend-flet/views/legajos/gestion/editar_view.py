@@ -1,10 +1,8 @@
-import asyncio
-import datetime
+from datetime import datetime
 
 import flet as ft
 import httpx
 
-from components.datapicker import DatePickerCustom
 from views.legajos.shared import CatalogosService
 from components.alerts import Toast
 from core.config import settings
@@ -41,13 +39,10 @@ class EditarLegajoView(ft.Container):
         # =====================================
         # CAMPOS
         # =====================================
-        # =====================================
-        # DATE PICKER
-        # =====================================
-
-        self.fecha_alta = DatePickerCustom(
-            self.page_ref,
-            label="Fecha Alta"
+      
+        self.fecha_alta = ft.TextField(
+            label="Fecha Ingreso Actual",
+            read_only=True
         )
        
         self.txt_cuil = ft.TextField(
@@ -322,7 +317,6 @@ class EditarLegajoView(ft.Container):
             ]
         )   
     async def load(self, legajo_id: None):
-
         self.limpiar()
         await CatalogosService.refresh()
         await self.cargar_banco()
@@ -336,7 +330,7 @@ class EditarLegajoView(ft.Container):
         #self.update()
     def limpiar(self):
 
-        self.fecha_alta.reset()
+        self.fecha_alta.value= ""
     
         self.lbl_mensaje.visible = False
 
@@ -533,13 +527,12 @@ class EditarLegajoView(ft.Container):
 
         e.control.update()
     def editar(self, item):
-
         self.legajo_id = item["id"]
         self.txt_cuil.value = item["cuil"]
+        self.fecha_alta.value = item["fecha_ingreso_actual"]
         self.txt_apellido.value = item["apellido"]
         self.txt_nombre.value = item["nombre"]
         self.ddl_sexo.value = item["sexo"]
-
         self.ddl_categoria.value = str(item["categoria_id"])
 
         self.ddl_modalidad.value = str(
@@ -572,10 +565,18 @@ class EditarLegajoView(ft.Container):
             return
 
         data = response.json()
+        fecha = data.get("fecha_ingreso_actual")
+        fecha_formateada = ""
+        if fecha:
+            fecha_formateada = datetime.strptime(
+                fecha,
+                "%Y-%m-%d"
+               ).strftime("%d/%m/%Y")
 
         legajo = {
                     "id" : data.get('id'),
                     "cuil": data.get("cuil", 0),
+                    "fecha_ingreso_actual" :  fecha_formateada,
                     "apellido": data.get("apellido", ""),
                     "nombre": data.get("nombre", ""),
                     "sexo": data.get("sexo",""),
