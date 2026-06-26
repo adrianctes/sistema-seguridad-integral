@@ -61,10 +61,6 @@ class LegajosView(ft.Container):
             scale=0.9
         )
 
-        # =====================================
-        # TABLA
-        # =====================================
-
         self.table = ft.DataTable(
 
             expand=True,
@@ -119,10 +115,6 @@ class LegajosView(ft.Container):
 
             rows=[]
         )
-
-        # =====================================
-        # LABELS
-        # =====================================
 
         self.lbl_total = ft.Text(
             "Total: 0",
@@ -181,7 +173,7 @@ class LegajosView(ft.Container):
 
                         ft.FilledButton(
 
-                            "Nuevo Legajo",
+                            "Nuevo",
 
                             icon=ft.Icons.ADD,
 
@@ -264,10 +256,7 @@ class LegajosView(ft.Container):
 
                     border_radius=0,
 
-                    border=ft.Border.all(
-                        1,
-                        "#E2E8F0"
-                    ),
+                    border=ft.Border.all(1,"#E2E8F0" ),
 
                     padding=10,
 
@@ -505,7 +494,12 @@ class LegajosView(ft.Container):
                                         content=ft.Text(
                                             "Eliminar",
                                             size=11
-                                        )
+                                        ),
+                                        on_click=lambda e, item=item:
+                                            self.page_ref.run_task(
+                                                self.eliminar_legajo,
+                                                item
+                                            )
                                     ),
                                                                                                    
                                     
@@ -680,3 +674,85 @@ class LegajosView(ft.Container):
 
         await gestion.load()
     
+    async def eliminar_legajo(self, item):
+
+        token = settings.TOKEN
+
+        if not token:
+
+            await self.toast.show(
+                self.page_ref,
+                "Sesión expirada",
+                "error"
+            )
+
+            return
+
+        headers = {
+            "Authorization": f"Bearer {token}"
+        }
+
+        url = f"{settings.URL_BACKEND}/legajos/{item['id']}"
+
+        try:
+
+            async with httpx.AsyncClient() as client:
+
+                response = await client.delete(
+                    url,
+                    headers=headers,
+                    follow_redirects=True
+                )
+
+            # =========================
+            # TOKEN INVALIDO
+            # =========================
+
+            if response.status_code == 401:
+
+                self.table.rows.clear()
+
+                await self.toast.show(
+                    self.page_ref,
+                    "Token inválido o expirado",
+                    "error"
+                )
+
+                return
+
+            # =========================
+            # ERROR API
+            # =========================
+
+            if response.status_code != 200:
+
+                await self.toast.show(
+                    self.page_ref,
+                    f"Error API: {response.status_code}",
+                    "error"
+                )
+
+                return
+
+            # =========================
+            # OK
+            # =========================
+
+            data = response.json()
+
+            await self.toast.show(
+                self.page_ref,
+                data.get("message", "Legajo eliminado"),
+                "success"
+            )
+
+            # refrescar tabla
+            await self.listar_legajos()
+
+        except Exception as ex:
+
+            await self.toast.show(
+                self.page_ref,
+                str(ex),
+                "error"
+            )

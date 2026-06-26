@@ -7,7 +7,7 @@ from views.legajos.gestion.historia_laboral.historia_laboral_view import Histori
 from views.legajos.gestion.familiares_view import FamiliaresView
 from views.legajos.gestion.sanciones_view import SancionesView
 from views.legajos.gestion.notas_view import NotasView
-
+from views.legajos.gestion.conceptos_legajo.legajo_conceptos_view import LegajoConceptosView
 
 class GestionLegajoLayout(ft.Container):
 
@@ -39,7 +39,8 @@ class GestionLegajoLayout(ft.Container):
 
             "sanciones": SancionesView(page),
 
-            "notas": NotasView(page)
+            "notas": NotasView(page),
+            "conceptos_legajo" : LegajoConceptosView(page)
 
         }
 
@@ -59,7 +60,7 @@ class GestionLegajoLayout(ft.Container):
         # =========================
 
         self.main_container = ft.Container(
-            expand=True,
+            expand=True,       
             content=self.views["editar"]
         )
 

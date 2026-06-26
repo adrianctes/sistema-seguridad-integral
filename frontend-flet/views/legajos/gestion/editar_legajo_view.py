@@ -85,13 +85,27 @@ class EditarLegajoView(ft.Container):
             options=[],
         )
 
-        self.ddl_modalidad = ft.Dropdown(
-            label="Modalidad",
+        self.ddl_modalidad_liquidacion = ft.Dropdown(
+            label="Modalidad de liquidacion",
             expand=True,
             height=COMMON_HEIGHT,
             options=[],
         )
-
+        self.ddl_modalidad_pago = ft.Dropdown(
+            label="Modalidad de pago",
+            expand=True,
+            height=COMMON_HEIGHT,
+            options=[],
+        )
+        self.txt_valor_modalidad_pago = ft.TextField(
+            label="Valor",
+            height=60,
+            expand=True,
+            value="0.00",
+            max_length=10,
+            keyboard_type=ft.KeyboardType.NUMBER,
+            on_change=self.solo_decimal,
+        )
         self.txt_telefono = ft.TextField(
             label="Teléfono",
             height=60,
@@ -119,7 +133,7 @@ class EditarLegajoView(ft.Container):
 
 
         self.chk_sac = ft.Checkbox(
-            label="SAC",
+            label="Liquida sac",
             value=False
         )
 
@@ -240,14 +254,26 @@ class EditarLegajoView(ft.Container):
                                 self.ddl_sexo,
                                 self.ddl_categoria
                             ]),
+                           ft.Row(
+                                    spacing=10,
+                                    controls=[
+                                        ft.Container(
+                                            expand=3,
+                                            content=self.ddl_modalidad_liquidacion
+                                        ),
 
-                            ft.Row(
-                                spacing=10,
-                                controls=[
-                                    self.ddl_modalidad,
-                                    self.txt_telefono,
-                                ],
-                            ),
+                                        ft.Container(
+                                            expand=2,
+                                            content=self.ddl_modalidad_pago
+                                        ),
+
+                                        ft.Container(
+                                            expand=1,
+                                            content=self.txt_valor_modalidad_pago
+                                        )
+                                    ]
+                                ),
+
 
                             ft.Row(
                                 spacing=10,
@@ -256,11 +282,30 @@ class EditarLegajoView(ft.Container):
                                     self.txt_cbu,
                                 ],
                             ),
+                            ft.Row(
+                            controls=[
+                                ft.Container(
+                                    expand=2,
+                                    content=self.txt_telefono,
+                                ),
 
-                            ft.Row([
-                                self.chk_sac,
-                                self.chk_activo
-                            ]),
+                                ft.Container(
+                                    expand=2,
+                                    content=ft.Row(
+                                        controls=[
+
+                                            self.chk_sac,
+                                            self.chk_activo
+                                        ]
+                                    )
+                                ),
+                            ]
+                        ),
+
+                            #ft.Row([
+                            #    self.chk_sac,
+                            #    self.chk_activo
+                            #]),
 
                             ft.Divider(),
 
@@ -321,7 +366,8 @@ class EditarLegajoView(ft.Container):
         await CatalogosService.refresh()
         await self.cargar_banco()
         await self.cargar_categoria()
-        await self.cargar_modalidad()
+        await self.cargar_modalidad_liquidacion()
+        await self.cargar_modalidad_pago()
    
         item =  await self.obtener_legajo_by_id(legajo_id)
     
@@ -356,19 +402,20 @@ class EditarLegajoView(ft.Container):
 
         self.ddl_categoria.value = None
 
-        self.ddl_modalidad.value = None
+        self.ddl_modalidad_liquidacion.value = None
 
         self.ddl_sexo.error_text = None
 
         self.ddl_categoria.error_text = None
 
-        self.ddl_modalidad.error_text = None
+        self.ddl_modalidad_liquidacion.error_text = None
 
         self.chk_sac.value = False
 
         self.chk_activo.value = True
 
         self.page_ref.update()
+
     async def validar_formulario(self):
 
         valido = True
@@ -393,7 +440,7 @@ class EditarLegajoView(ft.Container):
             self.ddl_categoria.error_text = "Seleccione categoría"
             valido = False
 
-        if not self.ddl_modalidad.value:
+        if not self.ddl_modalidad_liquidacion.value:
             self.ddl_modalidad.error_text = "Seleccione modalidad"
             valido = False
 
@@ -417,12 +464,14 @@ class EditarLegajoView(ft.Container):
                 "nombre": self.txt_nombre.value,
                 "sexo": self.ddl_sexo.value,
                 "categoria_id": self.ddl_categoria.value,
-                "modalidad_liquidacion_id": self.ddl_modalidad.value,
+                "modalidad_liquidacion_id": self.ddl_modalidad_liquidacion.value,
                 "sac": self.chk_sac.value,
                 "activo": self.chk_activo.value,
                 "telefono": self.txt_telefono.value,
                 "banco_id" : self.ddl_banco.value,
-                "cbu": self.txt_cbu.value
+                "cbu": self.txt_cbu.value,
+                "modalidad_pago_id": self.ddl_modalidad_pago.value,
+                "valor_modalidad_pago": self.txt_valor_modalidad_pago.value
             }
 
             ok = await self.api_editar(data)
@@ -434,9 +483,6 @@ class EditarLegajoView(ft.Container):
                     "success"
                 )
 
-                #self.lbl_mensaje.value = (
-                #    "Se guardó correctamente"
-                #)
 
                 self.lbl_mensaje.color = "#15803D"
 
@@ -472,6 +518,7 @@ class EditarLegajoView(ft.Container):
             )
 
         return response.status_code in (200, 201)
+    
     async def cargar_banco(self):
         self.ddl_banco.options = [
 
@@ -496,18 +543,49 @@ class EditarLegajoView(ft.Container):
             ]
 
         self.page_ref.update()
-    async def cargar_modalidad(self):
-        self.ddl_modalidad.options = [
+    async def cargar_modalidad_liquidacion(self):
+        self.ddl_modalidad_liquidacion.options = [
 
                 ft.dropdown.Option(
                     key=str(item["id"]),
                     text=item["nombre"]
                 )
 
-                for item in CatalogosService.modalidades
+                for item in CatalogosService.modalidades_liquidacion
             ]
 
         self.page_ref.update()
+    async def cargar_modalidad_pago(self):
+        self.ddl_modalidad_pago.options = [
+
+                ft.dropdown.Option(
+                    key=str(item["id"]),
+                    text=item["nombre"]
+                )
+
+                for item in CatalogosService.modalidades_pago
+            ]
+
+        self.page_ref.update()
+    def solo_decimal(self, e):
+        valor = e.control.value
+
+        permitido = ""
+
+        separador = False
+
+        for c in valor:
+
+            if c.isdigit():
+                permitido += c
+
+            elif c in [".", ","] and not separador:
+                permitido += "."
+                separador = True
+
+        e.control.value = permitido
+
+        e.control.update()
     def solo_numeros(self, e):
 
         limpio = "".join(
@@ -534,11 +612,9 @@ class EditarLegajoView(ft.Container):
         self.txt_nombre.value = item["nombre"]
         self.ddl_sexo.value = item["sexo"]
         self.ddl_categoria.value = str(item["categoria_id"])
-
-        self.ddl_modalidad.value = str(
-            item["modalidad_liquidacion_id"]
-        )
-
+        self.ddl_modalidad_liquidacion.value = str(item["modalidad_liquidacion_id"])
+        self.ddl_modalidad_pago.value = str(item["modalidad_pago_id"])
+        self.txt_valor_modalidad_pago.value = str(item["valor_modalidad_pago"])
         self.txt_telefono.value = item["telefono"]
 
         self.chk_sac.value = item["sac"]
@@ -585,6 +661,8 @@ class EditarLegajoView(ft.Container):
                     "telefono": data.get("telefono", ""),
                     "activo": data.get("activo", True),
                     "sac":  data.get("sac", False),
+                    "modalidad_pago_id" : data.get("modalidad_pago_id"),
+                    "valor_modalidad_pago" : data.get("valor_modalidad_pago")
                 }
    
         return legajo

@@ -4,6 +4,8 @@ from views.legajos.legajo_list_view import LegajosView
 from views.dashboard.dashboard_view import DashboardView
 from views.legajos.gestion.gestion_layout import GestionLegajoLayout
 from views.legajos.legajo_crear_view import CrearLegajoView
+from views.liquidaciones.concepto.concepto_list_view import ConceptosListView
+from views.liquidaciones.concepto.concepto_crear_editar_view import CrearEditarConceptoView
 
 
 class Layout:
@@ -30,7 +32,9 @@ class Layout:
             "dashboard" : DashboardView(page),
             "legajos": LegajosView(page),
             "crear_legajo": CrearLegajoView(page),
-            "gestion_legajo": GestionLegajoLayout(page)
+            "gestion_legajo": GestionLegajoLayout(page),
+            "conceptos": ConceptosListView(page),
+            "crear_concepto" : CrearEditarConceptoView(page)
 
         }
 
@@ -42,8 +46,8 @@ class Layout:
 
             expand=True,
 
-            padding=0,
-            
+            padding=-8,
+                 
             content=self.views["dashboard"]
 
         )
@@ -63,17 +67,13 @@ class Layout:
             ]
         )
 
-    def change_view(self, view_name):
+    '''def change_view(self, view_name):
 
         if view_name in self.views:
 
             vista = self.views[view_name]
 
             self.content.content = vista
-
-            # =========================
-            # HOOKS OPCIONALES
-            # =========================
 
             if view_name == "dashboard":
                 if hasattr(vista, "load"):
@@ -111,4 +111,38 @@ class Layout:
                 )
             )
 
+        self.page.update()'''
+    def change_view(
+        self,
+        view_name,
+        *args
+    ):
+
+        if view_name in self.views:
+
+            vista = self.views[view_name]
+
+            self.content.content = vista
+
+            if hasattr(vista, "load"):
+
+                self.page.run_task(
+                    vista.load,
+                    *args
+                )
+
+        else:
+
+            self.content.content = ft.Container(
+
+                content=ft.Text(
+
+                    f"Vista '{view_name}' en construcción",
+
+                    size=26
+                )
+            )
+
         self.page.update()
+
+        return vista

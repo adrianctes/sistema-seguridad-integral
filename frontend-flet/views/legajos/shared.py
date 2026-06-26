@@ -9,7 +9,7 @@ class CatalogosService:
 
     categorias = []
 
-    modalidades = []
+    modalidades_liquidacion = []
 
     @classmethod
     async def cargar_bancos(cls):
@@ -48,7 +48,7 @@ class CatalogosService:
             cls.categorias = response.json()
 
     @classmethod
-    async def cargar_modalidades(cls):
+    async def cargar_modalidades_liquidacion(cls):
 
         token = settings.TOKEN
 
@@ -63,7 +63,7 @@ class CatalogosService:
 
         if response.status_code == 200:
 
-            cls.modalidades = response.json()
+            cls.modalidades_liquidacion = response.json()
 
     @classmethod
     async def refresh(cls):
@@ -71,5 +71,5 @@ class CatalogosService:
         await asyncio.gather(
             cls.cargar_bancos(),
             cls.cargar_categorias(),
-            cls.cargar_modalidades()
+            cls.cargar_modalidades_liquidacion()
         )

@@ -448,10 +448,10 @@ class Sidebar(ft.Container):
         self.bgcolor = self.bg
 
         self.padding = ft.Padding.only(
-            top=15,
-            left=10,
-            right=10,
-            bottom=10
+            top = 15,
+            left = 5,
+            right = 10,
+            bottom = 10
         )
 
         self.content = ft.Column(
@@ -514,6 +514,10 @@ class Sidebar(ft.Container):
                 self.item(
                     "Notas",
                     "notas"
+                ),
+                self.item(
+                    "Conceptos aplicados",
+                    "conceptos_legajo"
                 ),
             ]
         )

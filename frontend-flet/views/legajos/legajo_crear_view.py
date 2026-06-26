@@ -1,12 +1,10 @@
 import asyncio
-import datetime
-
 import flet as ft
 import httpx
 
-from components.datapicker import DatePickerCustom
 from core.config import settings
 from views.legajos.shared import CatalogosService
+from core.constants import MODALIDAD_PAGO
 
 
 class CrearLegajoView(ft.Container):
@@ -24,10 +22,6 @@ class CrearLegajoView(ft.Container):
         self.bgcolor = "#F1F5F9"
 
         self.padding = 20
-
-        # =====================================
-        # LOADER
-        # =====================================
 
         self.loading = ft.ProgressRing(
             visible=False
@@ -61,6 +55,16 @@ class CrearLegajoView(ft.Container):
             on_change=self.force_upper
         )
 
+        self.txt_valor_modalidad_pago = ft.TextField(
+            label="Valor",
+            height=60,
+            expand=True,
+            value="0.00",
+            max_length=10,
+            keyboard_type=ft.KeyboardType.NUMBER,
+            on_change=self.solo_decimal,
+        )
+
         self.ddl_sexo = ft.Dropdown(
             label="Sexo",
             expand=True,
@@ -78,8 +82,15 @@ class CrearLegajoView(ft.Container):
             options=[],
         )
 
-        self.ddl_modalidad = ft.Dropdown(
-            label="Modalidad",
+        self.ddl_modalidad_liquidacion = ft.Dropdown(
+            label="Modalidad de liquidacion",
+            expand=True,
+            height=COMMON_HEIGHT,
+            options=[],
+        )
+
+        self.ddl_modalidad_pago = ft.Dropdown(
+            label="Modalidad de pago",
             expand=True,
             height=COMMON_HEIGHT,
             options=[],
@@ -112,7 +123,7 @@ class CrearLegajoView(ft.Container):
 
 
         self.chk_sac = ft.Checkbox(
-            label="SAC",
+            label="Liquida sac",
             value=False
         )
 
@@ -221,12 +232,24 @@ class CrearLegajoView(ft.Container):
                             ]),
 
                             ft.Row(
-                                spacing=10,
-                                controls=[
-                                    self.ddl_modalidad,
-                                    self.txt_telefono,
-                                ],
-                            ),
+                                    spacing=10,
+                                    controls=[
+                                        ft.Container(
+                                            expand=3,
+                                            content=self.ddl_modalidad_liquidacion
+                                        ),
+
+                                        ft.Container(
+                                            expand=2,
+                                            content=self.ddl_modalidad_pago
+                                        ),
+
+                                        ft.Container(
+                                            expand=1,
+                                            content=self.txt_valor_modalidad_pago
+                                        )
+                                    ]
+                                ),
 
                             ft.Row(
                                 spacing=10,
@@ -236,9 +259,18 @@ class CrearLegajoView(ft.Container):
                                 ],
                             ),
 
-                            ft.Row([
-                                self.chk_sac
-                            ]),
+                            ft.Row(
+                                    controls=[
+                                        ft.Container(
+                                            expand=2,
+                                            content=self.txt_telefono,
+                                        ),
+                                        ft.Container(
+                                            expand=2,
+                                            content=self.chk_sac,
+                                        ),
+                                    ]
+                                ),
 
                             ft.Divider(),
 
@@ -286,10 +318,12 @@ class CrearLegajoView(ft.Container):
 
     async def load(self):
         self.limpiar()
-        await CatalogosService.refresh()
+       # await CatalogosService.refresh()
         await self.cargar_banco()
         await self.cargar_categoria()
-        await self.cargar_modalidad()
+        await self.cargar_modalidad_liquidacion()
+        await self.cargar_modalidad_pago()
+        
 
 
     def limpiar(self):
@@ -318,13 +352,13 @@ class CrearLegajoView(ft.Container):
 
         self.ddl_categoria.value = None
 
-        self.ddl_modalidad.value = None
+        self.ddl_modalidad_liquidacion.value = None
 
         self.ddl_sexo.error_text = None
 
         self.ddl_categoria.error_text = None
 
-        self.ddl_modalidad.error_text = None
+        self.ddl_modalidad_liquidacion.error_text = None
 
         self.chk_sac.value = False
 
@@ -356,14 +390,13 @@ class CrearLegajoView(ft.Container):
             self.ddl_categoria.error_text = "Seleccione categoría"
             valido = False
 
-        if not self.ddl_modalidad.value:
-            self.ddl_modalidad.error_text = "Seleccione modalidad"
+        if not self.ddl_modalidad_liquidacion.value:
+            self.ddl_modalidad_liquidacion.error_text = "Seleccione modalidad liquidacion"
             valido = False
         
         self.page_ref.update()
 
         return valido
-
  
     async def guardar(self, e):
 
@@ -382,11 +415,13 @@ class CrearLegajoView(ft.Container):
                 "nombre": self.txt_nombre.value,
                 "sexo": self.ddl_sexo.value,
                 "categoria_id": self.ddl_categoria.value,
-                "modalidad_liquidacion_id": self.ddl_modalidad.value,
+                "modalidad_liquidacion_id": self.ddl_modalidad_liquidacion.value,
                 "sac": self.chk_sac.value,
                 "activo": False ,
                 "telefono": self.txt_telefono.value,
-                "banco_id" : self.ddl_banco.value
+                "banco_id" : self.ddl_banco.value,
+                "modalidad_pago_id": self.ddl_modalidad_pago.value,
+                "valor_modalidad_pago": self.txt_valor_modalidad_pago.value
             }
 
             ok = await self.api_crear(data)
@@ -476,6 +511,7 @@ class CrearLegajoView(ft.Container):
             ]
 
         self.page_ref.update()
+    
     async def cargar_categoria(self):
         self.ddl_categoria.options = [
 
@@ -488,19 +524,53 @@ class CrearLegajoView(ft.Container):
             ]
 
         self.page_ref.update()
-    async def cargar_modalidad(self):
-        self.ddl_modalidad.options = [
+   
+    async def cargar_modalidad_liquidacion(self):
+        self.ddl_modalidad_liquidacion.options = [
 
                 ft.dropdown.Option(
                     key=str(item["id"]),
                     text=item["nombre"]
                 )
 
-                for item in CatalogosService.modalidades
+                for item in CatalogosService.modalidades_liquidacion
+            ]
+
+        self.page_ref.update()
+
+    async def cargar_modalidad_pago(self):
+        self.ddl_modalidad_pago.options = [
+
+                ft.dropdown.Option(
+                    key=str(item["id"]),
+                    text=item["nombre"]
+                )
+
+                for item in MODALIDAD_PAGO
             ]
 
         self.page_ref.update()
     
+    def solo_decimal(self, e):
+        valor = e.control.value
+
+        permitido = ""
+
+        separador = False
+
+        for c in valor:
+
+            if c.isdigit():
+                permitido += c
+
+            elif c in [".", ","] and not separador:
+                permitido += "."
+                separador = True
+
+        e.control.value = permitido
+
+        e.control.update()
+
     def solo_numeros(self, e):
 
         limpio = "".join(
@@ -512,10 +582,6 @@ class CrearLegajoView(ft.Container):
             e.control.value = limpio
 
             e.control.update()
-
-    # =====================================
-    # FORCE UPPER
-    # =====================================
 
     def force_upper(self, e):
 

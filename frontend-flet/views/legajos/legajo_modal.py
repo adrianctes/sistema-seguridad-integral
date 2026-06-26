@@ -62,7 +62,7 @@ class ModalLegajo:
 )
 
         self.ddl_modalidad = ft.Dropdown(
-                label="Modalidad",
+                label="Modalidad de liquidacion",
                 expand=True,
                 height=COMMON_HEIGHT,
                 options=[],
@@ -76,7 +76,7 @@ class ModalLegajo:
             on_change=self.solo_numeros,
         )
 
-        self.chk_sac = ft.Checkbox(label="SAC", value=False)
+        self.chk_sac = ft.Checkbox(label="Liquida sac", value=False)
         self.chk_activo = ft.Checkbox(label="Activo", value=True)
 
         self.lbl_mensaje = ft.Text( "",
@@ -482,14 +482,14 @@ class ModalLegajo:
 
             if response_modalidad.status_code == 200:
 
-                modalidades = response_modalidad.json()
+                modalidades_liquidacion = response_modalidad.json()
 
                 self.ddl_modalidad.options = [
                     ft.dropdown.Option(
                         key=str(item["id"]),
                         text=item["nombre"]
                     )
-                    for item in modalidades
+                    for item in modalidades_liquidacion
                 ]
 
             self.page.update()
