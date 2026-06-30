@@ -19,6 +19,7 @@ class GestionLegajoLayout(ft.Container):
         self.current_key = "editar"
 
         self.legajo_id = None
+        self.modalidad_pago_id = 0
 
         self.ayn = ""
 
@@ -40,7 +41,8 @@ class GestionLegajoLayout(ft.Container):
             "sanciones": SancionesView(page),
 
             "notas": NotasView(page),
-            "conceptos_legajo" : LegajoConceptosView(page)
+            "conceptos_legajo" : LegajoConceptosView(page),
+            
 
         }
 
@@ -93,10 +95,6 @@ class GestionLegajoLayout(ft.Container):
         self.main_container.content = vista
 
         self.page_ref.update()
-
-        # =========================
-        # LOAD OPCIONAL
-        # =========================
 
         if hasattr(vista, "load"):
 

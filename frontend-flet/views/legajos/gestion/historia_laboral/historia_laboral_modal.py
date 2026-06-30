@@ -90,9 +90,6 @@ class HistoriaLaboralModal:
             visible=False
         )
 
-        # =====================================
-        # DIALOG
-        # =====================================
 
         self.dialog = ft.AlertDialog(
 

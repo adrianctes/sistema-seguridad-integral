@@ -318,14 +318,12 @@ class CrearLegajoView(ft.Container):
 
     async def load(self):
         self.limpiar()
-       # await CatalogosService.refresh()
+        await CatalogosService.refresh()
         await self.cargar_banco()
         await self.cargar_categoria()
         await self.cargar_modalidad_liquidacion()
         await self.cargar_modalidad_pago()
         
-
-
     def limpiar(self):
     
         self.lbl_mensaje.visible = False

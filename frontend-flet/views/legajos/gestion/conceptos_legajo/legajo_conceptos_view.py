@@ -3,6 +3,9 @@ import httpx
 
 from components.alerts import Toast
 from core.config import settings
+import flet as ft
+
+from views.legajos.gestion.conceptos_legajo.modal_legajo_concepto  import  ModalLegajoConcepto
 
 
 class LegajoConceptosView(ft.Container):
@@ -12,8 +15,10 @@ class LegajoConceptosView(ft.Container):
         super().__init__()
 
         self.page_ref = page
+        self.modal =  ModalLegajoConcepto(page=self.page_ref)
+  
         self.toast = Toast()
-
+        self.legajo_id = 0
         self.expand = True
         self.bgcolor = "#F1F5F9"
         self.padding = 20
@@ -93,15 +98,9 @@ class LegajoConceptosView(ft.Container):
 
         page.run_task(self.listar)
 
-    # =========================================================
-    # INIT
-    # =========================================================
     async def init(self):
         await self.listar()
 
-    # =========================================================
-    # BUILD
-    # =========================================================
     def build(self):
 
         return ft.Stack(
@@ -133,18 +132,18 @@ class LegajoConceptosView(ft.Container):
                         ft.Text("Administración de conceptos del legajo", size=11, color="#64748B"),
                     ]
                 ),
-
                 ft.FilledButton(
-                    "Nuevo",
-                    icon=ft.Icons.ADD,
-                    height=36,
-                    on_click=lambda e:
-                        self.page_ref.run_task(self.abrir_formulario, None),
-                    style=ft.ButtonStyle(
-                        shape=ft.RoundedRectangleBorder(radius=0),
-                        bgcolor="#030B16",
-                        padding=12
-                    )
+                                "Nuevo",
+                                icon=ft.Icons.ADD,
+                                height=36,
+                                on_click=lambda e: self.page_ref.run_task(self.abrir_modal),
+                                style=ft.ButtonStyle(
+                                    shape=ft.RoundedRectangleBorder(radius=0),
+                                    bgcolor="#030B16",
+                                    padding=12
+                                )
+                            
+                
                 )
             ]
         )
@@ -257,11 +256,8 @@ class LegajoConceptosView(ft.Container):
         except Exception as ex:
             await self.toast.show(self.page_ref, str(ex), "error")
 
-    # =========================================================
-    # LOAD TABLE
-    # =========================================================
     def load_data(self):
-
+    
         self.table.rows.clear()
 
         datos = self.conceptos
@@ -296,8 +292,8 @@ class LegajoConceptosView(ft.Container):
 
                                     ft.PopupMenuItem(
                                         content=ft.Text("Editar", size=11),
-                                        on_click=lambda e, item=item:
-                                            self.page_ref.run_task(self.abrir_formulario, item)
+                                       
+                                            on_click=self.abrir_modal
                                     ),
 
                                 ]
@@ -315,9 +311,13 @@ class LegajoConceptosView(ft.Container):
 
         self.lbl_page.value = f"Página {self.current_page} de {total_pages}"
 
-    # =========================================================
-    # ACCIONES
-    # =========================================================
+    async def load(
+        self,
+        legajo_id
+    ):
+
+       self.legajo_id=legajo_id
+       
     async def buscar(self, e):
         self.load_data()
         self.page_ref.update()
@@ -328,13 +328,18 @@ class LegajoConceptosView(ft.Container):
     async def prev_page(self, e):
         pass
 
-    async def abrir_formulario(self, item):
+    async def abrir_modal(self):
+            print(self.legajo_id)
+            await self.modal.abrir(
+                legajo_id=self.legajo_id
+                
+            )
 
-        view = self.page_ref.layout.views.get("legajo_concepto_form")
+    async def abrir_modal_editar(self, item):
 
-        if item:
-            await view.set_mode(item["id"])
-        else:
-            await view.set_mode(0)
+        await self.modal.abrir(
+            legajo_id=self.legajo_id,
+            item=item
+        )
 
-        self.page_ref.layout.change_view("legajo_concepto_form")
+      

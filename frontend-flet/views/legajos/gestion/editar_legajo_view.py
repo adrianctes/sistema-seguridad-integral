@@ -4,6 +4,7 @@ import flet as ft
 import httpx
 
 from views.legajos.shared import CatalogosService
+from core.constants import MODALIDAD_PAGO
 from components.alerts import Toast
 from core.config import settings
 
@@ -104,7 +105,7 @@ class EditarLegajoView(ft.Container):
             value="0.00",
             max_length=10,
             keyboard_type=ft.KeyboardType.NUMBER,
-            on_change=self.solo_decimal,
+            on_change=self.solo_decimal
         )
         self.txt_telefono = ft.TextField(
             label="Teléfono",
@@ -361,7 +362,7 @@ class EditarLegajoView(ft.Container):
                 self.toast
             ]
         )   
-    async def load(self, legajo_id: None):
+    async def load(self, legajo_id: None , modalidad_pago_id = None):
         self.limpiar()
         await CatalogosService.refresh()
         await self.cargar_banco()
@@ -447,6 +448,7 @@ class EditarLegajoView(ft.Container):
         self.page_ref.update()
 
         return valido
+
     async def guardar(self, e):
 
         if not await self.validar_formulario():
@@ -501,6 +503,7 @@ class EditarLegajoView(ft.Container):
             self.loading.visible = False
 
             self.page_ref.update()
+   
     async def api_editar(self, data):
 
         token = settings.TOKEN
@@ -531,6 +534,7 @@ class EditarLegajoView(ft.Container):
             ]
 
         self.page_ref.update()
+
     async def cargar_categoria(self):
         self.ddl_categoria.options = [
 
@@ -543,6 +547,7 @@ class EditarLegajoView(ft.Container):
             ]
 
         self.page_ref.update()
+
     async def cargar_modalidad_liquidacion(self):
         self.ddl_modalidad_liquidacion.options = [
 
@@ -555,6 +560,7 @@ class EditarLegajoView(ft.Container):
             ]
 
         self.page_ref.update()
+
     async def cargar_modalidad_pago(self):
         self.ddl_modalidad_pago.options = [
 
@@ -563,10 +569,11 @@ class EditarLegajoView(ft.Container):
                     text=item["nombre"]
                 )
 
-                for item in CatalogosService.modalidades_pago
+                for item in MODALIDAD_PAGO
             ]
 
         self.page_ref.update()
+   
     def solo_decimal(self, e):
         valor = e.control.value
 
@@ -586,6 +593,7 @@ class EditarLegajoView(ft.Container):
         e.control.value = permitido
 
         e.control.update()
+
     def solo_numeros(self, e):
 
         limpio = "".join(
@@ -597,6 +605,7 @@ class EditarLegajoView(ft.Container):
             e.control.value = limpio
 
             e.control.update()
+  
     def force_upper(self, e):
 
         e.control.value = (
@@ -604,6 +613,7 @@ class EditarLegajoView(ft.Container):
         ).upper()
 
         e.control.update()
+    
     def editar(self, item):
         self.legajo_id = item["id"]
         self.txt_cuil.value = item["cuil"]
@@ -622,6 +632,7 @@ class EditarLegajoView(ft.Container):
         self.chk_activo.value = item["activo"]
 
         self.page_ref.update()
+
     async def obtener_legajo_by_id(self,legajo_id:int):
         token = settings.TOKEN
         url = f"{settings.URL_BACKEND}/legajos/{legajo_id}"
@@ -664,6 +675,6 @@ class EditarLegajoView(ft.Container):
                     "modalidad_pago_id" : data.get("modalidad_pago_id"),
                     "valor_modalidad_pago" : data.get("valor_modalidad_pago")
                 }
-   
+        
         return legajo
  

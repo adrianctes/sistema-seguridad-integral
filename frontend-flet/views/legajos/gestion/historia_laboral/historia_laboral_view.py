@@ -247,7 +247,7 @@ class HistoriaLaboralView(ft.Container):
             ]
         )
 
-    async def load(self, legajo_id=None):
+    async def load(self, legajo_id= None, modalidad_pago_id = None ):
   
         if legajo_id:
             self.legajo_id = legajo_id
