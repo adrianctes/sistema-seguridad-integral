@@ -121,7 +121,7 @@ class Layout:
 
             self.content.content = vista
 
-            if hasattr(vista, "load"):
+            if   hasattr(vista, "load"):
 
                 self.page.run_task(
                     vista.load,

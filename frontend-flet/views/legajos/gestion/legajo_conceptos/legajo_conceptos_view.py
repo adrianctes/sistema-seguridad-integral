@@ -15,7 +15,8 @@ class LegajoConceptosView(ft.Container):
         super().__init__()
 
         self.page_ref = page
-        self.modal =  ModalLegajoConcepto(page=self.page_ref)
+        self.modal =  ModalLegajoConcepto(page=self.page_ref,
+                                          on_success=self.cargar_datos  )
   
         self.toast = Toast()
         self.legajo_id = 0
@@ -57,7 +58,6 @@ class LegajoConceptosView(ft.Container):
         # TABLA
         # ==========================
         self.table = ft.DataTable(
-
             expand=True,
             column_spacing=18,
             horizontal_margin=10,
@@ -79,6 +79,7 @@ class LegajoConceptosView(ft.Container):
             columns=[
                         ft.DataColumn(ft.Text("Código", size=11)),
                         ft.DataColumn(ft.Text("Nombre", size=11)),
+                        ft.DataColumn(ft.Text("Cantidad", size=11)),
                         ft.DataColumn(ft.Text("Valor", size=11)),
                         ft.DataColumn(ft.Text("Estado", size=11)),
                         ft.DataColumn(ft.Text("Acciones", size=11)),  # 👈 falta esta
@@ -211,9 +212,6 @@ class LegajoConceptosView(ft.Container):
             )
         )
 
-    # =========================================================
-    # API
-    # =========================================================
     async def listar(self, e=None):
 
         token = settings.TOKEN
@@ -239,6 +237,7 @@ class LegajoConceptosView(ft.Container):
                     {
                         "id": x.get("id"),
                         "legajo_id": x.get("legajo_id"),
+                        "cantidad": x.get("cantidad"),
                         "valor": x.get("valor", 0.0),
                         "activo": x.get("activo", False),
 
@@ -257,9 +256,11 @@ class LegajoConceptosView(ft.Container):
             print(ex.args)
             await self.toast.show(self.page_ref, str(ex), "error")
 
-    def load_data(self):
+    ''' def load_data(self):
     
         self.table.rows.clear()
+
+        activos = self.chk_activos.value
 
         datos = self.conceptos
         for item in datos:
@@ -268,26 +269,49 @@ class LegajoConceptosView(ft.Container):
                         cells=[
                             ft.DataCell(ft.Text(item["codigo"], size=11)),
                             ft.DataCell(ft.Text(item["nombre"], size=11)),
-                            ft.DataCell(ft.Text(str(item["valor"]), size=11)),
-
+                            ft.DataCell(ft.Text(str(item["cantidad"]), size=11)),
+                            ft.DataCell(
+                                        ft.Text(
+                                            f'{float(item["valor"]):,.2f}'
+                                                .replace(",", "X")
+                                                .replace(".", ",")
+                                                .replace("X", "."),
+                                            size=11
+                                        )
+                                    ),
                             ft.DataCell(
                                 ft.Icon(
                                     ft.Icons.CHECK if item["activo"] else ft.Icons.CLOSE
                                 )
                             ),
-
                             ft.DataCell(
                                     ft.PopupMenuButton(
                                         icon=ft.Icons.MORE_VERT,
                                         items=[
                                             ft.PopupMenuItem(
-                                                content=ft.Text("Editar"),
+                                                icon=ft.Icons.EDIT_OUTLINED,
+                                                content=ft.Text("Editar",
+                                                             size=11    ),
                                                 on_click=lambda e, i=item:
                                                     self.page_ref.run_task(
                                                         self.abrir_modal_editar,
                                                         i
                                                     )
-                                            )
+                                            ),
+                                            ft.PopupMenuItem(
+                                            height=30,
+                                            icon=ft.Icons.DELETE_OUTLINE,
+                                            content=ft.Text(
+                                                "Eliminar",
+                                                size=11
+                                            ),
+                                            on_click=lambda e, item=item:
+                                                self.page_ref.run_task(
+                                                    self.confirmar_eliminar,
+                                                    item
+                                                )
+                                        ),
+                                    
                                     ]
                                 )
                             )
@@ -301,6 +325,72 @@ class LegajoConceptosView(ft.Container):
         total_pages = max(1, (self.total_items + self.page_size - 1) // self.page_size)
 
         self.lbl_page.value = f"Página {self.current_page} de {total_pages}"
+        '''
+    def load_data(self):
+
+        self.table.rows.clear()
+
+        activos = self.chk_activos.value  # True/False
+
+        datos = self.conceptos
+
+        if activos is True:
+            datos = [d for d in datos if d["activo"]]
+
+        for item in datos:
+            self.table.rows.append(
+                ft.DataRow(
+                    cells=[
+                        ft.DataCell(ft.Text(item["codigo"], size=11)),
+                        ft.DataCell(ft.Text(item["nombre"], size=11)),
+                        ft.DataCell(ft.Text(str(item["cantidad"]), size=11)),
+                        ft.DataCell(
+                            ft.Text(
+                                f'{float(item["valor"]):,.2f}'
+                                    .replace(",", "X")
+                                    .replace(".", ",")
+                                    .replace("X", "."),
+                                size=11
+                            )
+                        ),
+                       ft.DataCell(
+                        ft.Container(
+                            #width=40,
+                            alignment=ft.Alignment.CENTER,
+                            content=ft.Icon(
+                                ft.Icons.CHECK if item["activo"] else ft.Icons.CLOSE,
+                                size=16
+                            )
+                        )
+                    ),
+                        ft.DataCell(
+                            ft.PopupMenuButton(
+                                icon=ft.Icons.MORE_VERT,
+                                items=[
+                                    ft.PopupMenuItem(
+                                        icon=ft.Icons.EDIT_OUTLINED,
+                                        content=ft.Text("Editar", size=11),
+                                        on_click=lambda e, i=item:
+                                            self.page_ref.run_task(self.abrir_modal_editar, i)
+                                    ),
+                                    ft.PopupMenuItem(
+                                        icon=ft.Icons.DELETE_OUTLINE,
+                                        content=ft.Text("Eliminar", size=11),
+                                        on_click=lambda e, i=item:
+                                            self.page_ref.run_task(self.confirmar_eliminar, i)
+                                    ),
+                                ]
+                            )
+                        )
+                    ]
+                )
+            )
+
+        self.total_items = len(datos)
+        self.lbl_total.value = f"Total registros: {self.total_items}"
+        total_pages = max(1, (self.total_items + self.page_size - 1) // self.page_size)
+        self.lbl_page.value = f"Página {self.current_page} de {total_pages}"
+
 
     async def load(
         self,
@@ -331,5 +421,140 @@ class LegajoConceptosView(ft.Container):
             legajo_id=self.legajo_id,
             item=item
         )
+    
+    async def cargar_datos(self):
 
-      
+            await self.listar()
+
+            self.update()
+    
+    async def confirmar_eliminar(self, item):
+
+        dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("Confirmar eliminación"),
+            content=ft.Text(
+                "¿Realmente desea eliminar este concepto?"
+            ),
+            actions_alignment=ft.MainAxisAlignment.END,
+            actions=[
+
+                ft.OutlinedButton(
+                    "Cancelar",
+                    on_click=lambda e: cerrar()
+                ),
+
+                ft.FilledButton(
+                    "Eliminar",
+                    bgcolor="#DC2626",
+                    color="white",
+                    on_click=lambda e: confirmar()
+                )
+            ]
+        )
+
+        def cerrar():
+
+            dialog.open = False
+
+            self.page_ref.update()
+
+        async def ejecutar():
+
+            dialog.open = False
+
+            self.page_ref.update()
+
+            await self.eliminar_item(item)
+
+        def confirmar():
+
+            self.page_ref.run_task(
+                ejecutar
+            )
+
+        if dialog not in self.page_ref.overlay:
+            self.page_ref.overlay.append(dialog)
+
+        self.page_ref.dialog = dialog
+
+        dialog.open = True
+
+        self.page_ref.update()
+            
+
+    
+    async def eliminar_item(self, item):
+
+        token = settings.TOKEN
+
+        legajo_id = item["legajo_id"]
+        item_id = item["id"]
+
+        url = (
+            f"{settings.URL_BACKEND}/legajos/{legajo_id}/conceptos/{item_id}"
+        )
+
+        try:
+
+            async with httpx.AsyncClient() as client:
+
+                response = await client.delete(
+                    url,
+                    headers={
+                        "Authorization": f"Bearer {token}"
+                    }
+                )
+
+            # Eliminación correcta
+            if response.status_code in (200, 204):
+
+                await self.toast.show(
+                    self.page_ref,
+                    "Concepto eliminado correctamente",
+                    "success"
+                )
+
+                # recargar listado
+                await self.listar()
+
+                self.page_ref.update()
+
+                return True
+
+            # Error API
+            try:
+
+                data = response.json()
+
+                mensaje = data.get(
+                    "detail",
+                    "Ocurrió un error"
+                )
+
+            except Exception:
+
+                mensaje = (
+                    f"Error API ({response.status_code})"
+                )
+
+            await self.toast.show(
+                self.page_ref,
+                mensaje,
+                "error"
+            )
+
+            return False
+
+        except Exception as ex:
+
+            print(ex)
+
+            await self.toast.show(
+                self.page_ref,
+                "Ocurrió un error al intentar eliminar",
+                "error"
+            )
+
+            return False
+    

@@ -1,5 +1,4 @@
 import asyncio
-
 import flet as ft
 import httpx
 
@@ -7,60 +6,63 @@ from core.config import settings
 from components.datapicker import DatePickerCustom
 from core.constants import TIPO_MOVIMIENTO
 
-class HistoriaLaboralModal:
+
+class HistoriaLaboralModal(ft.AlertDialog):
 
     def __init__(self, page, on_success=None):
 
-        self.page = page
+        super().__init__()
 
+        self.page_ref = page
         self.legajo_id = None
-
         self.on_success = on_success
 
-        # =====================================
-        # LOADER
-        # =====================================
+        self.modal = True
+        self.open = False
+
+        self.bgcolor = "white"
+
+        self.shape = ft.RoundedRectangleBorder(
+            radius=0
+        )
+
+        self.content_padding = 0
+
+        self.inset_padding = 20
+
+        COMMON_HEIGHT = 55
+
+        # ==========================
+        # LOADING
+        # ==========================
 
         self.loading = ft.ProgressRing(
             visible=False
         )
 
-        COMMON_HEIGHT = 55
-
-        # =====================================
+        # ==========================
         # CAMPOS
-        # =====================================
+        # ==========================
+
         self.ddl_tipo_movimiento = ft.Dropdown(
 
-                    label="Tipo Movimiento",
+            label="Tipo Movimiento",
 
-                    expand=True,
+            height=COMMON_HEIGHT,
 
-                    height=COMMON_HEIGHT,
-
-                    options=[
-
-                        ft.dropdown.Option(
-                            key=str(key),
-                            text=value
-                        )
-
-                        for key, value in TIPO_MOVIMIENTO.items()
-                    ],
+            options=[
+                ft.dropdown.Option(
+                    key=str(k),
+                    text=v
                 )
-        
-        # =====================================
-        # FECHA
-        # =====================================
-
-        self.fecha = DatePickerCustom(
-            self.page,
-            label="Fecha"
+                for k, v in TIPO_MOVIMIENTO.items()
+            ]
         )
 
-        # =====================================
-        # OBSERVACION
-        # =====================================
+        self.fecha = DatePickerCustom(
+            page,
+            label="Fecha"
+        )
 
         self.txt_observacion = ft.TextField(
 
@@ -70,172 +72,151 @@ class HistoriaLaboralModal:
 
             min_lines=4,
 
-            max_lines=6,
-
-            expand=True
+            max_lines=6
         )
-
-        # =====================================
-        # MENSAJE
-        # =====================================
 
         self.lbl_mensaje = ft.Text(
 
             "",
 
-            size=14,
+            visible=False,
 
-            color=ft.Colors.RED_400,
-
-            visible=False
+            size=13
         )
 
+        # ==========================
+        # CONTENIDO
+        # ==========================
 
-        self.dialog = ft.AlertDialog(
+        self.content = ft.Container(
 
-            modal=True,
+            width=700,
 
-            bgcolor="white",
+            padding=20,
 
-            shape=ft.RoundedRectangleBorder(
-                radius=0
-            ),
+            content=ft.Column(
 
-            content_padding=0,
+                spacing=15,
 
-            inset_padding=20,
+                tight=True,
 
-            content=ft.Container(
+                controls=[
 
-                width=700,
+                    ft.Row(
 
-                padding=20,
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
 
-                content=ft.Column(
+                        controls=[
 
-                    tight=True,
+                            ft.Column(
 
-                    spacing=15,
+                                spacing=2,
 
-                    controls=[
+                                controls=[
 
-                        # =====================================
-                        # HEADER
-                        # =====================================
+                                    ft.Text(
+                                        "Historia Laboral",
+                                        size=18,
+                                        weight=ft.FontWeight.BOLD
+                                    ),
 
-                        ft.Row(
+                                    ft.Text(
+                                        "Registrar movimiento laboral",
+                                        size=11,
+                                        color="#64748B"
+                                    ),
 
-                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                    self.lbl_mensaje
+                                ]
+                            ),
 
-                            controls=[
+                            ft.IconButton(
 
-                                ft.Column(
+                                icon=ft.Icons.CLOSE,
 
-                                    spacing=2,
+                                on_click=self.cerrar
+                            )
+                        ]
+                    ),
 
-                                    controls=[
+                    ft.Divider(),
 
-                                        ft.Text(
-                                            "Historia Laboral",
-                                            size=18,
-                                            weight=ft.FontWeight.BOLD
-                                        ),
+                    ft.ResponsiveRow(
 
-                                        ft.Text(
-                                            "Registrar movimiento laboral",
-                                            size=11,
-                                            color="#64748B"
-                                        ),
+                        controls=[
 
-                                        self.lbl_mensaje
-                                    ]
-                                ),
+                            ft.Container(
+                                col={"sm": 12, "md": 6},
+                                content=self.ddl_tipo_movimiento
+                            ),
 
-                                ft.IconButton(
-                                    icon=ft.Icons.CLOSE,
-                                    on_click=self.cerrar
-                                )
-                            ]
-                        ),
+                            ft.Container(
+                                col={"sm": 12, "md": 6},
+                                content=self.fecha
+                            ),
 
-                        ft.Divider(),
+                            ft.Container(
+                                col=12,
+                                content=self.txt_observacion
+                            )
+                        ]
+                    ),
 
-                        # =====================================
-                        # FORM
-                        # =====================================
+                    ft.Divider(),
 
-                        ft.ResponsiveRow(
+                    ft.Row(
 
-                            controls=[
+                        alignment=ft.MainAxisAlignment.END,
 
-                                ft.Container(
-                                    col={"sm": 12, "md": 6},
-                                    content=self.ddl_tipo_movimiento,
-                                ),
+                        controls=[
 
-                                ft.Container(
-                                    col={"sm": 12, "md": 6},
-                                    content=self.fecha
-                                ),
+                            self.loading,
 
-                                ft.Container(
-                                    col=12,
-                                    content=self.txt_observacion
-                                )
-                            ]
-                        ),
+                            ft.OutlinedButton(
+                                "Cancelar",
+                                on_click=self.cerrar
+                            ),
 
-                        ft.Divider(),
-
-                        # =====================================
-                        # FOOTER
-                        # =====================================
-
-                        ft.Row(
-
-                            alignment=ft.MainAxisAlignment.END,
-
-                            controls=[
-
-                                self.loading,
-
-                                ft.OutlinedButton(
-                                    "Cancelar",
-                                    on_click=self.cerrar
-                                ),
-
-                                ft.FilledButton(
-                                    "Guardar",
-                                    on_click=self.guardar
-                                )
-                            ]
-                        )
-                    ]
-                )
+                            ft.FilledButton(
+                                "Guardar",
+                                on_click=self.guardar
+                            )
+                        ]
+                    )
+                ]
             )
         )
 
-        self.page.overlay.append(
-            self.dialog
-        )
+        if self not in self.page_ref.overlay:
+            self.page_ref.overlay.append(self)
 
-    async def abrir(self, legajo_id: int, e=None):
+    async def abrir(self, legajo_id):
+
         self.legajo_id = legajo_id
 
         self.limpiar()
 
-        self.dialog.open = True
+        self.open = True
 
-        self.page.update()
+        self.page_ref.update()
 
     async def cerrar(self, e=None):
 
-        self.dialog.open = False
+        self.open = False
 
-        self.page.update()
+        self.page_ref.update()
 
     def limpiar(self):
 
+        '''self.lbl_mensaje.visible = False
+        self.lbl_mensaje.value = ""
+
+        self.ddl_tipo_movimiento.value = None
+        self.ddl_tipo_movimiento.error_text = None
+
+        self.txt_observacion.value = ""
+
+        self.fecha.reset()'''
         self.lbl_mensaje.visible = False
 
         self.lbl_mensaje.value = ""
@@ -252,7 +233,7 @@ class HistoriaLaboralModal:
 
     async def validar_formulario(self):
 
-        valido = True
+        ok = True
 
         self.ddl_tipo_movimiento.error_text = None
 
@@ -260,21 +241,21 @@ class HistoriaLaboralModal:
 
             self.ddl_tipo_movimiento.error_text = (
                 "Seleccione tipo movimiento"
-               
             )
 
-            valido = False
+            ok = False
 
         if not self.fecha.get_value():
+
             self.fecha.set_error(
                 "Seleccione una fecha"
             )
 
-            valido = False
+            ok = False
 
-        self.page.update()
+        self.page_ref.update()
 
-        return valido
+        return ok
 
     async def guardar(self, e):
 
@@ -283,11 +264,11 @@ class HistoriaLaboralModal:
 
         self.loading.visible = True
 
-        self.page.update()
+        self.page_ref.update()
 
         try:
 
-            data = {
+            payload = {
 
                 "legajo_id": self.legajo_id,
 
@@ -297,28 +278,31 @@ class HistoriaLaboralModal:
 
                 "fecha": self.fecha.get_value(),
 
-                "observacion": self.txt_observacion.value
+                "observacion":
+                    self.txt_observacion.value
             }
 
-            ok = await self.api_crear(data)
+            ok = await self.api_crear(
+                payload
+            )
 
             if ok:
 
                 self.lbl_mensaje.value = (
-                    "Movimiento registrado correctamente"
+                    "Guardado correctamente"
                 )
 
-                self.lbl_mensaje.color = "#15803D"
+                self.lbl_mensaje.color = (
+                    "#15803D"
+                )
 
                 self.lbl_mensaje.visible = True
 
-                self.page.update()
+                self.page_ref.update()
 
-                await asyncio.sleep(1)
+                await asyncio.sleep(0.8)
 
-                self.dialog.open = False
-
-                self.page.update()
+                await self.cerrar()
 
                 if self.on_success:
 
@@ -328,15 +312,9 @@ class HistoriaLaboralModal:
 
             self.loading.visible = False
 
-            self.page.update()
+            self.page_ref.update()
 
-    async def api_crear(self, data):
-
-        token = settings.TOKEN
-
-        url = (
-            f"{settings.URL_BACKEND}/historia-laboral"
-        )
+    async def api_crear(self, payload):
 
         try:
 
@@ -344,20 +322,20 @@ class HistoriaLaboralModal:
 
                 response = await client.post(
 
-                    url,
+                    f"{settings.URL_BACKEND}/historia-laboral",
 
-                    json=data,
+                    json=payload,
 
                     headers={
-                        "Authorization": f"Bearer {token}"
+                        "Authorization":
+                        f"Bearer {settings.TOKEN}"
                     }
                 )
 
-            # =====================================
-            # SUCCESS
-            # =====================================
-
-            if response.status_code in (200, 201):
+            if response.status_code in (
+                200,
+                201
+            ):
 
                 return True
 
@@ -365,27 +343,17 @@ class HistoriaLaboralModal:
 
             self.lbl_mensaje.value = data.get(
                 "detail",
-                "Error desconocido"
+                "Error"
             )
-
-            self.lbl_mensaje.color = "#DC2626"
-
-            self.lbl_mensaje.visible = True
-
-            self.page.update()
-
-            return False
 
         except Exception as ex:
 
-            print(ex)
-
             self.lbl_mensaje.value = str(ex)
 
-            self.lbl_mensaje.color = "#DC2626"
+        self.lbl_mensaje.color = "#DC2626"
 
-            self.lbl_mensaje.visible = True
+        self.lbl_mensaje.visible = True
 
-            self.page.update()
+        self.page_ref.update()
 
-            return False
+        return False

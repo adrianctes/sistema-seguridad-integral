@@ -36,6 +36,7 @@ class ModalLegajoConcepto(ft.AlertDialog):
             size=14,
             color=ft.Colors.RED_400,
             visible=False,
+             margin=ft.Margin(0, 10, 0, 12),
         )
 
         self.bgcolor = "white"
@@ -88,7 +89,15 @@ class ModalLegajoConcepto(ft.AlertDialog):
                                       value="0.00",
                                       max_length=10,
                                       keyboard_type=ft.KeyboardType.NUMBER,
+                                      on_change=self.valor_formateado_decimal)
+        
+        self.txt_cantidad = ft.TextField(label="Cantidad", 
+                                      expand=True,   
+                                      value="1.00",
+                                      max_length=10,
+                                      keyboard_type=ft.KeyboardType.NUMBER,
                                       on_change=self.solo_decimal)
+      
       
         self.chk_activo = ft.Checkbox(label="Activo", value=True)
 
@@ -105,14 +114,20 @@ class ModalLegajoConcepto(ft.AlertDialog):
         tight=True,
         controls=[
 
-            # CONCEPTO + VALOR
+            # CONCEPTO
+            ft.Container(
+                margin=ft.Margin(0, -14, 0, 0),
+                content=self.cmb_concepto
+            ),
+
+            # CANTIDAD + VALOR
             ft.Row(
                 spacing=10,
                 controls=[
+
                     ft.Container(
-                        expand=2,
-                        margin=ft.Margin(0, -14, 0, 0),
-                        content=self.cmb_concepto
+                        expand=1,
+                        content=self.txt_cantidad
                     ),
 
                     ft.Container(
@@ -124,8 +139,14 @@ class ModalLegajoConcepto(ft.AlertDialog):
 
             # ACTIVO
             ft.Container(
-                alignment=ft.Alignment.CENTER,
+                margin=ft.Margin(0, 4, 0, 0),
                 content=self.chk_activo
+            ),
+
+            # MENSAJE
+            ft.Container(
+                margin=ft.Margin(0, 4, 0, 0),
+                content=self.lbl_mensaje
             ),
 
             # DIVIDER
@@ -142,9 +163,9 @@ class ModalLegajoConcepto(ft.AlertDialog):
                     ft.OutlinedButton(
                         "Cancelar",
                         style=ft.ButtonStyle(
-                            shape=ft.RoundedRectangleBorder(
-                                radius=0
-                            ),
+                            #shape=ft.RoundedRectangleBorder(
+                            #    radius=0
+                            #),
                             padding=12
                         ),
                         on_click=self.cerrar
@@ -156,13 +177,13 @@ class ModalLegajoConcepto(ft.AlertDialog):
                         style=ft.ButtonStyle(
                             bgcolor="#0F172A",
                             color="white",
-                            shape=ft.RoundedRectangleBorder(
-                                radius=0
-                            ),
+                            #shape=ft.RoundedRectangleBorder(
+                            #    radius=0
+                            #),
                             padding=12
                         ),
                         on_click=self.guardar
-                    ),
+                    )
                 ]
             )
         ]
@@ -179,17 +200,18 @@ class ModalLegajoConcepto(ft.AlertDialog):
         self.modalidad_pago_id= legajo.get('modalidad_pago_id')
        
         await self.cargar_conceptos()
-       
-
+        self.cmb_concepto.disabled = False
+        self.item_id = 0
         if item:
             self.titulo_accion = "Editar Concepto del Legajo"
             self.lbl_titulo_accion.value = self.titulo_accion
             self.item_id = item["id"]
             self.cmb_concepto.value = item["concepto_id"]
-            #self.dp_desde.value = item["fecha_desde"]
-            #self.dp_hasta.value = item["fecha_hasta"] or ""
+            self.cmb_concepto.disabled = True
             self.txt_valor.value = str(item["valor"])
+            self.txt_cantidad.value = str(item["cantidad"])
             self.chk_activo.value = item["activo"]
+
 
         if self not in self.page_ref.overlay:
             self.page_ref.overlay.append(self)
@@ -218,9 +240,11 @@ class ModalLegajoConcepto(ft.AlertDialog):
         self.cmb_concepto.value = None
         self.cmb_concepto.value = ""
         self.txt_valor.error = None
+        self.txt_cantidad.error = None
         #self.dp_desde.value = ""
         #self.dp_hasta.value = ""
         self.txt_valor.value = "0.00"
+        self.txt_cantidad.value = "1.00"
         self.chk_activo.value = True
         self.lbl_mensaje.value = ""
 
@@ -240,11 +264,18 @@ class ModalLegajoConcepto(ft.AlertDialog):
                 "concepto_id": int(self.cmb_concepto.value),
                 #"fecha_desde": self.dp_desde.value,
                 #"fecha_hasta": self.dp_hasta.value or None,
-                "valor": float(self.txt_valor.value or 0),
+                "valor": float(
+                            self.txt_valor.value
+                                .replace(".", "")
+                                .replace(",", ".")
+                        ),#float(self.txt_valor.value or 0),
+                "cantidad": float(self.txt_cantidad.value or 0),
                 "activo": self.chk_activo.value
             }
-
-            ok = await self.api_crear(data)
+            if  self.item_id == 0 :
+                ok = await self.api_crear(data)
+            else :
+                ok = await self.api_editar(data)
 
             if not ok:
                 raise Exception()
@@ -299,6 +330,33 @@ class ModalLegajoConcepto(ft.AlertDialog):
         e.control.value = permitido
 
         e.control.update()
+    
+    def valor_formateado_decimal(self, e):
+
+        valor = e.control.value or ""
+
+        # dejar solo números
+        numeros = "".join(c for c in valor if c.isdigit())
+
+        if not numeros:
+            e.control.value = ""
+            e.control.update()
+            return
+
+        # últimos 2 dígitos = decimales
+        numero = int(numeros) / 100
+
+        # formato argentino: 900.000,00
+        formateado = (
+            f"{numero:,.2f}"
+            .replace(",", "X")
+            .replace(".", ",")
+            .replace("X", ".")
+        )
+
+        e.control.value = formateado
+
+        e.control.update()
 
     async def obtener_legajo_by_id(self,legajo_id:int):
         token = settings.TOKEN
@@ -341,10 +399,14 @@ class ModalLegajoConcepto(ft.AlertDialog):
 
         # limpiar errores anteriores
         self.cmb_concepto.error_text = None
-        self.txt_valor.error = None
+        self.txt_valor.error_text = None
+        self.txt_cantidad.error_text = None
 
-        # validar concepto
+        # ======================
+        # VALIDAR CONCEPTO
+        # ======================
         if not self.cmb_concepto.value:
+
             self.cmb_concepto.error_text = (
                 "Debe seleccionar un concepto."
             )
@@ -353,12 +415,14 @@ class ModalLegajoConcepto(ft.AlertDialog):
 
             return False
 
-        # validar valor vacío
+        # ======================
+        # VALIDAR VALOR
+        # ======================
         valor = (self.txt_valor.value or "").strip()
-       
+
         if valor == "":
 
-            self.txt_valor.error= (
+            self.txt_valor.error_text = (
                 "Debe ingresar un valor."
             )
 
@@ -366,14 +430,17 @@ class ModalLegajoConcepto(ft.AlertDialog):
 
             return False
 
-        # validar número
         try:
 
-            numero = float(valor)
+            numero = float(
+                valor
+                    .replace(".", "")
+                    .replace(",", ".")
+            )
 
             if numero < 0:
 
-                self.txt_valor.error = (
+                self.txt_valor.error_text = (
                     "El valor no puede ser negativo."
                 )
 
@@ -385,6 +452,47 @@ class ModalLegajoConcepto(ft.AlertDialog):
 
             self.txt_valor.error_text = (
                 "Valor inválido."
+            )
+
+            self.page_ref.update()
+
+            return False
+
+        # ======================
+        # VALIDAR CANTIDAD
+        # ======================
+        cantidad = (
+            self.txt_cantidad.value or ""
+        ).strip()
+
+        if cantidad == "":
+
+            self.txt_cantidad.error_text = (
+                "Debe ingresar una cantidad."
+            )
+
+            self.page_ref.update()
+
+            return False
+
+        try:
+
+            cantidad_num = float(cantidad)
+
+            if cantidad_num < 1:
+
+                self.txt_cantidad.error_text = (
+                    "La cantidad debe ser mayor o igual a 1."
+                )
+
+                self.page_ref.update()
+
+                return False
+
+        except ValueError:
+
+            self.txt_cantidad.error_text = (
+                "Cantidad inválida."
             )
 
             self.page_ref.update()
@@ -456,14 +564,14 @@ class ModalLegajoConcepto(ft.AlertDialog):
         token = settings.TOKEN
 
         url = (
-             f"{settings.URL_BACKEND}/legajo-conceptos/{self.item_id}"
+             f"{settings.URL_BACKEND}/legajos/{self.legajo_id}/conceptos/{self.item_id}"
         )
 
         try:
 
             async with httpx.AsyncClient() as client:
 
-                response = await client.pur(
+                response = await client.put(
 
                     url,
 
@@ -507,3 +615,5 @@ class ModalLegajoConcepto(ft.AlertDialog):
             self.page.update()
 
             return False
+        
+    

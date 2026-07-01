@@ -342,12 +342,15 @@ class LegajosView(ft.Container):
             ]
         )
 
-        page.run_task(self.listar_legajos)
+       #page.run_task(self.listar_legajos)
+
+    async def load(self):
+       await self.listar_legajos()
 
     def load_data(self):
 
         self.table.rows.clear()
-
+   
         filtro = (
             self.txt_busqueda.value or ""
         ).lower()
