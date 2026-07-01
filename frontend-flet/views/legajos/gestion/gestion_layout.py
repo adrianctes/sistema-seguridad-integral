@@ -7,7 +7,7 @@ from views.legajos.gestion.historia_laboral.historia_laboral_view import Histori
 from views.legajos.gestion.familiares_view import FamiliaresView
 from views.legajos.gestion.sanciones_view import SancionesView
 from views.legajos.gestion.notas_view import NotasView
-from views.legajos.gestion.conceptos_legajo.legajo_conceptos_view import LegajoConceptosView
+from views.legajos.gestion.legajo_conceptos.legajo_conceptos_view import LegajoConceptosView
 
 class GestionLegajoLayout(ft.Container):
 

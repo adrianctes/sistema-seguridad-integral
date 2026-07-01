@@ -315,7 +315,6 @@ class CrearLegajoView(ft.Container):
             ],
         )
 
-
     async def load(self):
         self.limpiar()
         await CatalogosService.refresh()

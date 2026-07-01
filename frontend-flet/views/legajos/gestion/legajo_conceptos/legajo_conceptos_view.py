@@ -5,7 +5,7 @@ from components.alerts import Toast
 from core.config import settings
 import flet as ft
 
-from views.legajos.gestion.conceptos_legajo.modal_legajo_concepto  import  ModalLegajoConcepto
+from views.legajos.gestion.legajo_conceptos.modal_legajo_concepto  import  ModalLegajoConcepto
 
 
 class LegajoConceptosView(ft.Container):
@@ -77,13 +77,12 @@ class LegajoConceptosView(ft.Container):
             ),
 
             columns=[
-                ft.DataColumn(ft.Text("Código", size=11)),
-                ft.DataColumn(ft.Text("Nombre", size=11)),
-                ft.DataColumn(ft.Text("Tipo cálculo", size=11)),
-                ft.DataColumn(ft.Text("Novedad", size=11)),
-                ft.DataColumn(ft.Text("Estado", size=11)),
-                ft.DataColumn(ft.Text("Acciones", size=11)),
-            ],
+                        ft.DataColumn(ft.Text("Código", size=11)),
+                        ft.DataColumn(ft.Text("Nombre", size=11)),
+                        ft.DataColumn(ft.Text("Valor", size=11)),
+                        ft.DataColumn(ft.Text("Estado", size=11)),
+                        ft.DataColumn(ft.Text("Acciones", size=11)),  # 👈 falta esta
+                    ],
             rows=[]
         )
 
@@ -225,7 +224,7 @@ class LegajoConceptosView(ft.Container):
 
         headers = {"Authorization": f"Bearer {token}"}
 
-        url = f"{settings.URL_BACKEND}/legajo-conceptos"
+        url = f"{settings.URL_BACKEND}/legajos/{self.legajo_id}/conceptos"
 
         try:
             async with httpx.AsyncClient() as client:
@@ -236,24 +235,26 @@ class LegajoConceptosView(ft.Container):
                 return
 
             data = response.json()
-
             self.conceptos = [
-                {
-                    "id": x.get("id"),
-                    "codigo": x.get("codigo", ""),
-                    "nombre": x.get("nombre", ""),
-                    "tipo_calculo": x.get("tipo_calculo", ""),
-                    "es_novedad": x.get("es_novedad", False),
-                    "activo": x.get("activo", False),
-                }
-                for x in data
-            ]
+                    {
+                        "id": x.get("id"),
+                        "legajo_id": x.get("legajo_id"),
+                        "valor": x.get("valor", 0.0),
+                        "activo": x.get("activo", False),
+
+                        "concepto_id": (x.get("concepto") or {}).get("id"),
+                        "codigo": (x.get("concepto") or {}).get("codigo", ""),
+                        "nombre": (x.get("concepto") or {}).get("nombre", ""),
+                    }
+                    for x in data
+                ]
 
             self.current_page = 1
             self.load_data()
             self.page_ref.update()
 
         except Exception as ex:
+            print(ex.args)
             await self.toast.show(self.page_ref, str(ex), "error")
 
     def load_data(self):
@@ -261,48 +262,38 @@ class LegajoConceptosView(ft.Container):
         self.table.rows.clear()
 
         datos = self.conceptos
-
         for item in datos:
+                self.table.rows.append(
+                    ft.DataRow(
+                        cells=[
+                            ft.DataCell(ft.Text(item["codigo"], size=11)),
+                            ft.DataCell(ft.Text(item["nombre"], size=11)),
+                            ft.DataCell(ft.Text(str(item["valor"]), size=11)),
 
-            self.table.rows.append(
-                ft.DataRow(
-                    cells=[
+                            ft.DataCell(
+                                ft.Icon(
+                                    ft.Icons.CHECK if item["activo"] else ft.Icons.CLOSE
+                                )
+                            ),
 
-                        ft.DataCell(ft.Text(item["codigo"], size=11)),
-                        ft.DataCell(ft.Text(item["nombre"], size=11)),
-                        ft.DataCell(ft.Text(item["tipo_calculo"], size=11)),
-
-                        ft.DataCell(
-                            ft.Icon(
-                                ft.Icons.CHECK if item["es_novedad"] else ft.Icons.CLOSE
+                            ft.DataCell(
+                                    ft.PopupMenuButton(
+                                        icon=ft.Icons.MORE_VERT,
+                                        items=[
+                                            ft.PopupMenuItem(
+                                                content=ft.Text("Editar"),
+                                                on_click=lambda e, i=item:
+                                                    self.page_ref.run_task(
+                                                        self.abrir_modal_editar,
+                                                        i
+                                                    )
+                                            )
+                                    ]
+                                )
                             )
-                        ),
-
-                        ft.DataCell(
-                            ft.Text(
-                                "Activo" if item["activo"] else "Inactivo",
-                                size=11
-                            )
-                        ),
-
-                        ft.DataCell(
-                            ft.PopupMenuButton(
-                                icon=ft.Icons.MORE_VERT,
-                                items=[
-
-                                    ft.PopupMenuItem(
-                                        content=ft.Text("Editar", size=11),
-                                       
-                                            on_click=self.abrir_modal
-                                    ),
-
-                                ]
-                            )
-                        )
-                    ]
+                        ]
+                    )
                 )
-            )
-
         self.total_items = len(datos)
 
         self.lbl_total.value = f"Total registros: {self.total_items}"
@@ -317,6 +308,7 @@ class LegajoConceptosView(ft.Container):
     ):
 
        self.legajo_id=legajo_id
+       await self.listar()
        
     async def buscar(self, e):
         self.load_data()
@@ -329,14 +321,12 @@ class LegajoConceptosView(ft.Container):
         pass
 
     async def abrir_modal(self):
-            print(self.legajo_id)
             await self.modal.abrir(
                 legajo_id=self.legajo_id
                 
             )
 
     async def abrir_modal_editar(self, item):
-
         await self.modal.abrir(
             legajo_id=self.legajo_id,
             item=item

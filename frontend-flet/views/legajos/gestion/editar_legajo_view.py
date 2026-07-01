@@ -485,7 +485,6 @@ class EditarLegajoView(ft.Container):
                     "success"
                 )
 
-
                 self.lbl_mensaje.color = "#15803D"
 
                 self.lbl_mensaje.visible = True

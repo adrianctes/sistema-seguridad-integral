@@ -4,18 +4,15 @@ from views.legajos.legajo_list_view import LegajosView
 from views.dashboard.dashboard_view import DashboardView
 from views.legajos.gestion.gestion_layout import GestionLegajoLayout
 from views.legajos.legajo_crear_view import CrearLegajoView
-from views.liquidaciones.concepto.concepto_list_view import ConceptosListView
-from views.liquidaciones.concepto.concepto_crear_editar_view import CrearEditarConceptoView
+from views.Gestion_haberes.conceptos.concepto_list_view import ConceptosListView
+from views.Gestion_haberes.conceptos.concepto_crear_editar_view import CrearEditarConceptoView
 
 
 class Layout:
-
     def __init__(self, page: ft.Page):
    
-
         self.page = page
-       
-       
+              
         # =========================
         # SIDEBAR
         # =========================
