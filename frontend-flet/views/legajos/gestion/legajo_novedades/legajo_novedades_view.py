@@ -3,7 +3,7 @@ import httpx
 
 from components.alerts import Toast
 from core.config import settings
-
+from views.legajos.gestion.legajo_novedades.modal_legajo_novedad import  ModalLegajoNovedad
 class LegajoNovedadesView(ft.Container):
 
     def __init__(self, page):
@@ -14,11 +14,11 @@ class LegajoNovedadesView(ft.Container):
 
         self.toast = Toast()
 
-        """ self.modal = ModalLegajoNovedad(
+        self.modal = ModalLegajoNovedad(
             page=self.page_ref,
             on_success=self.cargar_datos
         )
- """
+ 
         self.legajo_id = 0
 
         self.expand = True
@@ -131,12 +131,7 @@ class LegajoNovedadesView(ft.Container):
                     )
                 ),
 
-                ft.DataColumn(
-                    ft.Text(
-                        "Estado",
-                        size=11
-                    )
-                ),
+               
 
                 ft.DataColumn(
                     ft.Text(
@@ -163,9 +158,9 @@ class LegajoNovedadesView(ft.Container):
 
         self.content = self.build()
 
-        #page.run_task(
-           # self.listar
-        #)
+        """  page.run_task(
+            self.listar
+        ) """
 
     def build(self):
 
@@ -359,7 +354,7 @@ class LegajoNovedadesView(ft.Container):
         )
     async def buscar(self, e):
 
-        self.load_data()
+        await self.load_data()
 
         self.page_ref.update()
     
@@ -369,8 +364,7 @@ class LegajoNovedadesView(ft.Container):
         )
 
     async def cargar_datos(self):
-        #await self.listar()
-        pass
+        await self.listar()
 
     async def next_page(self, e):
         pass
@@ -449,7 +443,7 @@ class LegajoNovedadesView(ft.Container):
                         x.get("activo", False),
 
                     "estado":
-                        x.get("estado", ""),
+                        x.get("activo", ""),
 
                     "concepto":
                         (
@@ -466,7 +460,7 @@ class LegajoNovedadesView(ft.Container):
 
             self.current_page = 1
 
-            self.load_data()
+           # await self.load_data()
 
             self.page_ref.update()
 
@@ -482,3 +476,34 @@ class LegajoNovedadesView(ft.Container):
 
                 "error"
             )
+
+    async def load(
+        self,
+        legajo_id
+    ):
+
+       self.legajo_id=legajo_id
+       await self.listar()
+
+    async def load_data(self):
+        async with httpx.AsyncClient() as client:
+            r = await client.get(
+                f"{settings.URL_BACKEND}/legajos/{self.legajo_id}/novedades"
+            )
+
+        if r.status_code == 200:
+            self.table.rows.clear()
+
+            for item in r.json():
+                self.table.rows.append(
+                    ft.DataRow(
+                        cells=[
+                            ft.DataCell(ft.Text(item["tipo"])),
+                            ft.DataCell(ft.Text(str(item["fecha_desde"]))),
+                            ft.DataCell(ft.Text(str(item["fecha_hasta"] or ""))),
+                            ft.DataCell(ft.Text(item["descripcion"] or "")),
+                        ]
+                    )
+                )
+
+            self.page.update()

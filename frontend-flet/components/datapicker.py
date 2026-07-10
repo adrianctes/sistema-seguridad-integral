@@ -37,10 +37,6 @@ class DatePickerCustom(ft.Container):
 
         self.dialog = None
 
-    # =====================================
-    # OPEN CALENDAR
-    # =====================================
-
     def open_calendar(self, e):
 
         if not self.dialog:
@@ -58,10 +54,6 @@ class DatePickerCustom(ft.Container):
 
         self.page_ref.update()
 
-    # =====================================
-    # BUILD CALENDAR
-    # =====================================
-
     def build_calendar(self):
 
         year = self.current_date.year
@@ -73,9 +65,6 @@ class DatePickerCustom(ft.Container):
             month
         )
 
-        # =====================================
-        # HEADER
-        # =====================================
 
         header = ft.Row(
 
@@ -126,9 +115,7 @@ class DatePickerCustom(ft.Container):
             ]
         )
 
-        # =====================================
-        # DAYS
-        # =====================================
+      
 
         days_controls = []
 
@@ -217,10 +204,6 @@ class DatePickerCustom(ft.Container):
             ),
         )
 
-    # =====================================
-    # SELECT DAY
-    # =====================================
-
     def select_day(self, day):
 
         self.selected_date = datetime.date(
@@ -245,10 +228,6 @@ class DatePickerCustom(ft.Container):
             )
 
         self.close()
-
-    # =====================================
-    # NAVIGATION
-    # =====================================
 
     def next_month(self, e):
 
@@ -275,7 +254,6 @@ class DatePickerCustom(ft.Container):
         )
 
         self.page_ref.update()
-
 
     def add_months(self, source_date, months):
 
@@ -311,8 +289,6 @@ class DatePickerCustom(ft.Container):
             self.selected_date.day == day
         )
 
-
-
     def close(self):
 
         if self.dialog:
@@ -320,8 +296,6 @@ class DatePickerCustom(ft.Container):
             self.dialog.open = False
 
             self.page_ref.update()
-
- 
 
     def reset(self):
 
@@ -335,7 +309,6 @@ class DatePickerCustom(ft.Container):
 
         self.page_ref.update()
 
-     
     def set_error(self, message):
         self.input.error = message
         self.page_ref.update()
@@ -350,4 +323,24 @@ class DatePickerCustom(ft.Container):
             return None
 
         return self.selected_date.strftime("%Y-%m-%d")
-   
+    
+    def set_value(self, value):
+
+        if value is None:
+            self.selected_date = None
+            self.input.value = ""
+            self.current_date = datetime.date.today()
+
+        else:
+            if isinstance(value, str):
+                value = datetime.datetime.strptime(value, "%Y-%m-%d").date()
+
+            elif isinstance(value, datetime.datetime):
+                value = value.date()
+
+            self.selected_date = value
+            self.current_date = value
+            self.input.value = value.strftime("%d/%m/%Y")
+
+        self.page_ref.update()
+    

@@ -5,7 +5,6 @@ import httpx
 
 from core.config import settings
 from components.alerts import Toast
-from components.datapicker import DatePickerCustom
 
 class ModalLegajoConcepto(ft.AlertDialog):
 
@@ -107,18 +106,18 @@ class ModalLegajoConcepto(ft.AlertDialog):
         # CONTENT (COMPACTO)
         # =========================
         self.content = ft.Container(
-    width=700,
-    padding=15,
-    content=ft.Column(
-        spacing=10,
-        tight=True,
-        controls=[
+            width=700,
+            padding=15,
+            content=ft.Column(
+                spacing=10,
+                tight=True,
+                controls=[
 
-            # CONCEPTO
-            ft.Container(
-                margin=ft.Margin(0, -14, 0, 0),
-                content=self.cmb_concepto
-            ),
+                    # CONCEPTO
+                    ft.Container(
+                        margin=ft.Margin(0, -14, 0, 0),
+                        content=self.cmb_concepto
+                    ),
 
             # CANTIDAD + VALOR
             ft.Row(
@@ -360,7 +359,7 @@ class ModalLegajoConcepto(ft.AlertDialog):
 
     async def obtener_legajo_by_id(self,legajo_id:int):
         token = settings.TOKEN
-        url = f"{settings.URL_BACKEND}/legajos/{legajo_id}"
+        url = f"{settings.URL_BACKEND}/legajos/id/{legajo_id}"
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 url,

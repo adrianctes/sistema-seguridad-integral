@@ -2,6 +2,7 @@ import flet as ft
 from components.sidebar import Sidebar
 from views.legajos.legajo_list_view import LegajosView
 from views.dashboard.dashboard_view import DashboardView
+from views.Gestion_haberes.novedades.novedades_view import NovedadesView
 from views.legajos.gestion.gestion_layout import GestionLegajoLayout
 from views.legajos.legajo_crear_view import CrearLegajoView
 from views.Gestion_haberes.conceptos.concepto_list_view import ConceptosListView
@@ -31,7 +32,8 @@ class Layout:
             "crear_legajo": CrearLegajoView(page),
             "gestion_legajo": GestionLegajoLayout(page),
             "conceptos": ConceptosListView(page),
-            "crear_concepto" : CrearEditarConceptoView(page)
+            "crear_concepto" : CrearEditarConceptoView(page),
+            "novedades" : NovedadesView(page)
 
         }
 

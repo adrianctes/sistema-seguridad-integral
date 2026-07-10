@@ -634,7 +634,7 @@ class EditarLegajoView(ft.Container):
 
     async def obtener_legajo_by_id(self,legajo_id:int):
         token = settings.TOKEN
-        url = f"{settings.URL_BACKEND}/legajos/{legajo_id}"
+        url = f"{settings.URL_BACKEND}/legajos/id/{legajo_id}"
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 url,
