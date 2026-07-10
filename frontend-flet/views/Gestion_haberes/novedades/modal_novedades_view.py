@@ -383,14 +383,12 @@ class ModalNovedad(ft.AlertDialog):
         self.item_id = 0
 
         self.cmb_legajo.value = None
+        self.cmb_legajo.text= ""
         self.cmb_legajo.error_text= None
 
         self.cmb_concepto.value = None
+        self.cmb_concepto.text = None
         self.cmb_concepto.error_text= None
-
-        self.cmb_concepto.error_text = None
-
-        self.cmb_concepto.disabled = False
 
         self.fecha_desde.reset()
         self.fecha_hasta.reset()
@@ -592,7 +590,6 @@ class ModalNovedad(ft.AlertDialog):
                 e.control.value = nuevo_valor
                 e.control.update()
    
-
     def obtener_condicion(self):
         if not self.cmb_legajo.value:
             return False
