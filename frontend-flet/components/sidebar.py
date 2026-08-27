@@ -221,7 +221,7 @@ class Sidebar(ft.Container):
                     "legajos"
                 ),
 
-                # LIQUIDACION
+                # GESTION DE HABERES
 
                 ft.Container(
 
@@ -237,7 +237,7 @@ class Sidebar(ft.Container):
                     content=ft.ExpansionTile(
 
                         title=ft.Text(
-                            "Gestion haberes",
+                            "Sueldos",
 
                             size=14,
 
@@ -272,11 +272,65 @@ class Sidebar(ft.Container):
 
                         controls=[
 
-                            self.menu_item(
-                                ft.Icons.RECEIPT_LONG_ROUNDED,
-                                "Liquidacion",
-                                "liquidacion"
-                            ),
+                            ft.ExpansionTile(
+
+                                        leading=ft.Icon(
+                                            ft.Icons.RECEIPT_LONG_ROUNDED,
+                                            color=self.icon_color,
+                                            size=20
+                                        ),
+
+                                        title=ft.Text(
+                                            "Liquidación",
+                                            size=14,
+                                            color=self.text_color,
+                                            weight=ft.FontWeight.W_500
+                                        ),
+
+                                        tile_padding=ft.Padding.only(
+                                            left=16,
+                                            right=16
+                                        ),
+
+                                        controls_padding=ft.Padding.only(
+                                            left=16
+                                        ),
+
+                                        collapsed_icon_color=self.icon_color,
+                                        icon_color=self.icon_color,
+
+                                        controls=[
+
+                                            self.menu_item(
+                                                ft.Icons.SETTINGS_OUTLINED,
+                                                "Datos fijos",
+                                                "datos_fijos_liquidacion"
+                                            ),
+
+                                            self.menu_item(
+                                                ft.Icons.ANALYTICS_OUTLINED,
+                                                "Simulación",
+                                                "simulacion_liquidacion"
+                                            ),
+                                            self.menu_item(
+                                                ft.Icons.CALCULATE_OUTLINED,
+                                                "Haberes",
+                                                "liquidacion_haberes"
+                                            ),
+
+                                            self.menu_item(
+                                                ft.Icons.SEARCH,
+                                                "Consulta",
+                                                "consulta_liquidacion"
+                                            ),
+
+                                            self.menu_item(
+                                                ft.Icons.DESCRIPTION_OUTLINED,
+                                                "Emisión de recibos",
+                                                "emision_recibos"
+                                            ),
+                                        ],
+                                    ),
 
                             self.menu_item(
                                 ft.Icons.DESCRIPTION_OUTLINED,

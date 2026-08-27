@@ -67,6 +67,12 @@ class Toast(ft.Container):
                 "bg": "#DBEAFE",
                 "text": "#1D4ED8",
                 "icon": ft.Icons.INFO
+            },
+
+            "alert": {
+                "bg": "#FFC107",
+                "text": "#212529",
+                "icon": ft.Icons.WARNING_AMBER
             }
         }
 

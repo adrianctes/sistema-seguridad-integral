@@ -30,25 +30,15 @@ class ConceptosListView(ft.Container):
         self.conceptos = []
 
         self.txt_busqueda = ft.TextField(
-
             hint_text="Buscar nombre",
-
             prefix_icon=ft.Icons.SEARCH,
-
             border_radius=6,
-
             filled=True,
-
             bgcolor="white",
-
             border_color="#CBD5E1",
-
             expand=True,
-
             height=36,
-
             text_size=12,
-
             content_padding=10
         )
         self.chk_activos = ft.Checkbox(
@@ -134,7 +124,7 @@ class ConceptosListView(ft.Container):
                 rows=[]
             )
         self.lbl_total = ft.Text(
-            "Total: 0",
+            "Total registros: 0",
             size=11,
             color="#64748B"
         )
@@ -150,9 +140,9 @@ class ConceptosListView(ft.Container):
 
         page.run_task(self.listar)
 
-    async def init(self):
+    #async def init(self):
 
-        await self.listar()
+        #await self.listar()
 
     def build(self):
 
@@ -209,9 +199,9 @@ class ConceptosListView(ft.Container):
                 ft.FilledButton(
 
                             "Nuevo",
-
+                            margin=ft.Margin(0, 0, 10, 0),  # izquierda, arriba, derecha, abajo
                             icon=ft.Icons.ADD,
-
+                            width=110,
                             height=36,
 
                              on_click=lambda e:
@@ -225,7 +215,7 @@ class ConceptosListView(ft.Container):
                                     radius=0
                                 ),
                                 bgcolor="#030B16",
-                                padding=12
+                                #padding=12
                             )
                         )
             ]
@@ -234,10 +224,13 @@ class ConceptosListView(ft.Container):
     def filtros(self):
 
         return ft.Container(
-
+            height=60,
             bgcolor="white",
-
             padding=10,
+            border=ft.Border.all(
+                        1,
+                        "#E2E8F0"
+                    ),
 
             content=ft.Row(
 
@@ -252,15 +245,15 @@ class ConceptosListView(ft.Container):
                                 "Buscar",
 
                                 icon=ft.Icons.SEARCH,
-
+                                width=110,
                                 height=36,
 
                                 style=ft.ButtonStyle(
                                     shape=ft.RoundedRectangleBorder(
                                         radius=0
                                     ),
-                                    bgcolor="#030B16",
-                                    padding=10
+                                    bgcolor="#030B16"
+                                    #padding=10
                                 ),
 
                                 on_click=self.buscar
@@ -278,7 +271,7 @@ class ConceptosListView(ft.Container):
 
             bgcolor="white",
 
-            padding=8,
+            padding=10,
 
             border=ft.Border.all(1,"#E2E8F0" ),
 
@@ -320,7 +313,7 @@ class ConceptosListView(ft.Container):
                     ft.Row(
 
                         alignment=ft.MainAxisAlignment.END,
-                        spacing=2,
+                        #spacing=2,
                         controls=[
 
                             ft.IconButton(
@@ -339,6 +332,7 @@ class ConceptosListView(ft.Container):
                 ]
             )
         )
+    
     async def listar(self, e=None):
 
         token = settings.TOKEN
@@ -490,45 +484,45 @@ class ConceptosListView(ft.Container):
                             )
                              
                         ),
-                         ft.DataCell(
+                        ft.DataCell(
 
-                            ft.PopupMenuButton(
+                            ft.Row(
 
-                                icon=ft.Icons.MORE_VERT,
+                                spacing=0,
 
-                                icon_size=18,
+                                controls=[
 
-                                items=[
+                                    ft.IconButton(
 
-                                    ft.PopupMenuItem(
-                                        height=30,
-                                        icon=ft.Icons.VISIBILITY_OUTLINED,
-                                        content=ft.Text(
-                                            "Gestionar concepto",
-                                            size=11
-                                        ),
+                                        icon=ft.Icons.EDIT,
+
+                                        icon_size=18,
+
+                                        tooltip="Editar",
+
                                         on_click=lambda e, item=item:
                                             self.page_ref.run_task(
                                                 self.abrir_formulario,
                                                 item
                                             )
                                     ),
-                                    ft.PopupMenuItem(),  # divisor
-                                    ft.PopupMenuItem(
-                                        height=30,
-                                        icon=ft.Icons.DELETE_OUTLINE,
-                                        content=ft.Text(
-                                            "Eliminar",
-                                            size=11
-                                        ),
-                                        on_click=lambda e, item=item:
-                                            self.page_ref.run_task(
-                                                self.eliminar_concepto,
-                                                item
-                                            )
-                                    ),
-                                                                                                   
-                                    
+
+                                    ft.IconButton(
+
+                                        icon=ft.Icons.DELETE,
+
+                                        icon_size=18,
+
+                                        icon_color="red",
+
+                                        tooltip="Eliminar",
+
+                                        on_click=lambda e,
+                                        x=item: self.page_ref.run_task(
+                                            self.confirmar_eliminar,
+                                            x
+                                        )
+                                    )
                                 ]
                             )
                         )
@@ -563,6 +557,7 @@ class ConceptosListView(ft.Container):
 
     async def prev_page(self, e):
         pass
+   
     async def reload_view(self):
 
         self.txt_busqueda.value = ""
@@ -573,7 +568,7 @@ class ConceptosListView(ft.Container):
 
         self.table.rows.clear()
 
-        self.lbl_total.value = "Total: 0"
+        self.lbl_total.value = "Total registros: 0"
 
         self.lbl_page.value = ""
 
@@ -588,6 +583,60 @@ class ConceptosListView(ft.Container):
         else:
             await view.set_mode(0)
         self.page_ref.layout.change_view("crear_concepto")
+    
+    async def confirmar_eliminar(self, item):
+
+        dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("Confirmar eliminación"),
+            content=ft.Text(
+                "¿Realmente desea eliminar este registro?"
+            ),
+            actions_alignment=ft.MainAxisAlignment.END,
+            actions=[
+
+                ft.OutlinedButton(
+                    "Cancelar",
+                    on_click=lambda e: cerrar()
+                ),
+
+                ft.FilledButton(
+                    "Eliminar",
+                    bgcolor="#DC2626",
+                    color="white",
+                    on_click=lambda e: confirmar()
+                )
+            ]
+        )
+
+        def cerrar():
+
+            dialog.open = False
+
+            self.page_ref.update()
+
+        async def ejecutar():
+
+            dialog.open = False
+
+            self.page_ref.update()
+
+           #await self.eliminar_item(item)
+
+        def confirmar():
+
+            self.page_ref.run_task(
+                ejecutar
+            )
+
+        if dialog not in self.page_ref.overlay:
+            self.page_ref.overlay.append(dialog)
+
+        self.page_ref.dialog = dialog
+
+        dialog.open = True
+
+        self.page_ref.update()
        
 
 

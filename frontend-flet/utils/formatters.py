@@ -1,3 +1,6 @@
+from datetime import date, datetime
+
+
 def filtrar_decimal(texto: str) -> str:
     """
     Permite solo números y un único separador decimal.
@@ -75,3 +78,9 @@ def parsear_moneda(texto: str) -> float:
         .replace(".", "")
         .replace(",", ".")
     )
+
+def formatear_fecha(fecha : date):
+          
+        if fecha is None:
+          return ""  
+        return datetime.fromisoformat(fecha).strftime("%d/%m/%Y")

@@ -518,11 +518,7 @@ class Sidebar(ft.Container):
                 self.item(
                     "Conceptos aplicados",
                     "legajo_conceptos"
-                ),
-                 self.item(
-                    "Novedades aplicados",
-                    "legajo_novedades"
-                ),
+                )
             ]
         )
 

@@ -1,3 +1,5 @@
+import os
+
 import flet as ft
 import platform
 from components.layout import Layout
@@ -20,13 +22,12 @@ def main(page: ft.Page):
     # Detectar plataforma
     sistema = platform.system()
     platform_info = {
-        "Windows": "🪟 Windows Desktop",
-        "Darwin": "🍎 macOS Desktop", 
-        "Linux": "🐧 Linux Desktop"
-    }.get(sistema, f"📱 {sistema or 'Móvil'}")
+    "Windows": "Windows Desktop",
+    "Darwin": "macOS Desktop",
+    "Linux": "Linux Desktop"
+}.get(sistema, f"{sistema or 'Movil'}")
     
-    
-    
+
     layout = Layout(page)
 
     page.layout = layout
@@ -39,4 +40,7 @@ def main(page: ft.Page):
 
 
 if __name__ == "__main__":
-    ft.run(main)
+    ft.run(main) 
+
+
+

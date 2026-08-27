@@ -8,7 +8,7 @@ from views.legajos.gestion.familiares_view import FamiliaresView
 from views.legajos.gestion.sanciones_view import SancionesView
 from views.legajos.gestion.notas_view import NotasView
 from views.legajos.gestion.legajo_conceptos.legajo_conceptos_view import LegajoConceptosView
-from views.legajos.gestion.legajo_novedades.legajo_novedades_view import LegajoNovedadesView
+#from views.legajos.gestion.legajo_novedades.legajo_novedades_view import LegajoNovedadesView
 
 
 class GestionLegajoLayout(ft.Container):
@@ -44,9 +44,9 @@ class GestionLegajoLayout(ft.Container):
 
             "notas": NotasView(page),
 
-            "legajo_conceptos" : LegajoConceptosView(page),
+            "legajo_conceptos" : LegajoConceptosView(page)
 
-            "legajo_novedades" : LegajoNovedadesView(page)
+            #"legajo_novedades" : LegajoNovedadesView(page)
             
 
         }

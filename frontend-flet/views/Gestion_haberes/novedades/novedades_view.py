@@ -7,6 +7,7 @@ from components.alerts import Toast
 from core.config import settings
 from views.Gestion_haberes.novedades.modal_novedades_view import ModalNovedad
 from utils.formatters import formatear_moneda
+from components.datapicker import DatePickerCustom
 
 class NovedadesView(ft.Container):
 
@@ -38,6 +39,12 @@ class NovedadesView(ft.Container):
         # ==========================
         # FILTROS
         # ==========================
+        fecha = datetime.now().date().replace(day=1)
+        self.fecha = DatePickerCustom(
+                page=self.page_ref,
+                label="Fecha"
+            )
+        self.fecha.set_value(fecha)
 
         self.txt_busqueda = ft.TextField(
             hint_text="Buscar concepto...",
@@ -52,7 +59,21 @@ class NovedadesView(ft.Container):
             content_padding=10,
         )
 
-        # ==========================
+        self.cmb_tipo_busqueda = ft.Dropdown(
+                label="Buscar por",
+                expand= True,
+                height=36,
+                text_size=12,
+                value="legajo",
+                options=[
+                    ft.dropdown.Option("legajo", "N° de legajo"),
+                    ft.dropdown.Option("ayn", "Apellido y Nombre"),
+                    ft.dropdown.Option("codigo", "Código de concepto"),
+                    ft.dropdown.Option("concepto", "Concepto"),
+                ],
+                on_select=lambda e: self.cambio_tipo_busqueda(e)
+            )
+                    # ==========================
         # TABLA
         # ==========================
 
@@ -120,7 +141,7 @@ class NovedadesView(ft.Container):
         )
 
         self.lbl_total = ft.Text(
-            "Total: 0",
+            "Total registros: 0",
             size=11,
             color="#64748B"
         )
@@ -133,9 +154,8 @@ class NovedadesView(ft.Container):
 
         self.content = self.build()
 
-    # =======================================================
-    # BUILD
-    # =======================================================
+        #page.run_task(self.listar)
+
 
     def build(self):
 
@@ -148,9 +168,7 @@ class NovedadesView(ft.Container):
                 ft.Column(
 
                     expand=True,
-
                     spacing=10,
-
                     controls=[
 
                         self.header(),
@@ -198,11 +216,12 @@ class NovedadesView(ft.Container):
                 ),
 
                 ft.FilledButton(
-
+                    
                     "Nuevo",
-
+                    margin=ft.Margin(0, 0, 10, 0),  # izquierda, arriba, derecha, abajo
+                  
                     icon=ft.Icons.ADD,
-
+                    width=110,
                     height=36,
 
                     style=ft.ButtonStyle(
@@ -231,14 +250,32 @@ class NovedadesView(ft.Container):
         return ft.Container(
 
             bgcolor="white",
-
+            height=60,
             padding=10,
+
+            border=ft.Border.all(
+                        1,
+                        "#E2E8F0"
+                    ),
 
             content=ft.Row(
 
                 controls=[
 
-                    self.txt_busqueda,
+                    ft.Container(
+                                expand=1,
+                                content=self.fecha
+                            ),
+                    ft.Container(
+                                expand=1,                     
+                                content= self.cmb_tipo_busqueda
+                    ),
+                        
+                    ft.Container(
+                                expand=2,
+                                content= self.txt_busqueda
+                    ),
+                    
 
                     #self.chk_activos,
 
@@ -247,9 +284,8 @@ class NovedadesView(ft.Container):
                         "Buscar",
 
                         icon=ft.Icons.SEARCH,
-
+                        width=110,
                         height=36,
-
                         style=ft.ButtonStyle(
 
                             bgcolor="#030B16",
@@ -259,11 +295,111 @@ class NovedadesView(ft.Container):
                             )
                         ),
 
-                       # on_click=self.buscar
+                        on_click=self.buscar
                     )
+                
                 ]
             )
         )
+    def cambio_tipo_busqueda(self, e):
+            hints = {
+                "legajo": "Buscar por N° de legajo...",
+                "ayn": "Buscar por apellido y nombre...",
+                "codigo": "Buscar por código de concepto...",
+                "concepto": "Buscar por concepto...",
+            }
+
+            self.txt_busqueda.hint_text = hints.get(
+                self.cmb_tipo_busqueda.value,
+                "Buscar..."
+            )
+
+            self.txt_busqueda.value = ""
+            self.txt_busqueda.update()
+    def inicializar_filtros(self):
+            self.cmb_tipo_busqueda.value = "legajo"
+            self.txt_busqueda.value = ""
+            self.fecha.set_value(datetime.now().date().replace(day=1))
+            self.cambio_tipo_busqueda(None)
+            self.page_ref.update()
+    
+    '''def filtros(self):
+
+        return ft.Container(
+            bgcolor="white",
+            padding=10,
+            border=ft.Border.all(1, "#E2E8F0"),
+
+            content=ft.Column(
+                spacing=10,
+                controls=[
+
+                    # ==========================
+                    # FILA 1
+                    # ==========================
+                    ft.Row(
+                        spacing=10,
+                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                        controls=[
+
+                            ft.Container(
+                                width=120,
+                                content=self.fecha,
+                            ),
+
+                            ft.Container(
+                                expand=True,
+                                content=self.txt_busqueda,   # Legajo / Apellido y Nombre
+                            ),
+
+                            ft.Container(
+                                width=260,
+                               # content=self.cmb_concepto,
+                            ),
+
+                            #self.chk_activos,
+                        ],
+                    ),
+
+                    # ==========================
+                    # FILA 2
+                    # ==========================
+                    ft.Row(
+                        spacing=10,
+                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                        alignment=ft.MainAxisAlignment.END,
+                        controls=[
+
+                           
+
+                            ft.OutlinedButton(
+                                "Limpiar",
+                                icon=ft.Icons.CLEAR,
+                                height=36,
+                                # on_click=self.limpiar
+                            ),
+
+                            ft.FilledButton(
+                                "Buscar",
+                                icon=ft.Icons.SEARCH,
+                                width=120,
+                                height=36,
+                                style=ft.ButtonStyle(
+                                    bgcolor="#030B16",
+                                    color="white",
+                                    shape=ft.RoundedRectangleBorder(
+                                        radius=0
+                                    ),
+                                ),
+                                # on_click=self.buscar
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        )'''
+
+    
 
     # =======================================================
     # TABLA
@@ -277,12 +413,9 @@ class NovedadesView(ft.Container):
 
             bgcolor="white",
 
-            padding=8,
+            padding=10,
 
-            border=ft.Border.all(
-                1,
-                "#E2E8F0"
-            ),
+            border=ft.Border.all(1, "#E2E8F0" ),
 
             content=ft.Column(
 
@@ -308,7 +441,7 @@ class NovedadesView(ft.Container):
                         ]
                     ),
 
-                    ft.Divider(),
+                    ft.Divider(height=1),
 
                     ft.ListView(
 
@@ -350,19 +483,26 @@ class NovedadesView(ft.Container):
         self.legajo_id =0
 
         self.current_page = 1
+        self.inicializar_filtros()
 
-        await self.listar()
+        await self.listar() 
 
 
     async def buscar(self, e):
 
         self.current_page = 1
 
-        await self.load_data()
+        await self.listar()
 
 
     async def listar(self, e=None):
-        periodo= '202607'
+        params = {}
+        params["fecha"] = self.fecha.get_value()
+        if self.txt_busqueda.value:
+            params["tipo_busqueda"] = self.cmb_tipo_busqueda.value
+            params["busqueda"] = self.txt_busqueda.value
+
+
         token = settings.TOKEN
 
         if not token:
@@ -380,17 +520,15 @@ class NovedadesView(ft.Container):
         }
 
         try:
-
+     
             async with httpx.AsyncClient() as client:
 
                 response = await client.get(
                     f"{settings.URL_BACKEND}/novedades",
-                     params={
-                        "periodo": periodo
-                    },
+                     params=params,
                     headers=headers
                 )
-
+            
             if response.status_code != 200:
 
                 await self.toast.show(
@@ -417,9 +555,8 @@ class NovedadesView(ft.Container):
                 "error"
             )
 
-
     async def load_data(self):
-
+        
         self.table.rows.clear()
 
         texto = self.txt_busqueda.value.lower().strip()
@@ -428,7 +565,7 @@ class NovedadesView(ft.Container):
 
         datos = self.novedades
 
-        if texto:
+        '''if texto:
 
             datos = [
 
@@ -440,20 +577,8 @@ class NovedadesView(ft.Container):
                         ""
                     )
                 ).lower()
-            ]
+            ]'''
 
-        """  if activos:
-
-            datos = [
-
-                x for x in datos
-
-                if x.get(
-                    "activo",
-                    True
-                )
-            ]
- """
         self.total_items = len(datos)
 
         inicio = (self.current_page - 1) * self.page_size
@@ -596,15 +721,15 @@ class NovedadesView(ft.Container):
             (self.total_items + self.page_size - 1) // self.page_size
         )
 
-        self.lbl_total.value = f"Total: {self.total_items}"
+        self.lbl_total.value = f"Total registros: {self.total_items}"
 
         self.lbl_page.value = f"{self.current_page}/{total_paginas}"
 
         self.page_ref.update()
 
     async def cargar_datos(self):
-        await self.listar()
 
+        await self.listar()
 
     async def abrir_modal(self):
 
@@ -612,11 +737,9 @@ class NovedadesView(ft.Container):
            
         )
 
-
     async def editar(self, item):
 
         await self.modal.abrir(item)
-
 
     async def next_page(self, e):
 
@@ -630,7 +753,6 @@ class NovedadesView(ft.Container):
             self.current_page += 1
 
             await self.load_data()
-
 
     async def prev_page(self, e):
 
@@ -699,9 +821,8 @@ class NovedadesView(ft.Container):
         dialog.open = True
 
         self.page_ref.update()
-            
-
-    
+               
+   
     async def eliminar_item(self, item):
 
         token = settings.TOKEN

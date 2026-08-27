@@ -426,8 +426,6 @@ class ModalNovedad(ft.AlertDialog):
         
         fecha_hasta = self.calcular_ultimo_dia_del_mes()
 
-        print(self.txt_cantidad.value)
-
         try:
 
             payload = {
@@ -440,7 +438,7 @@ class ModalNovedad(ft.AlertDialog):
                 "valor": parsear_moneda(self.txt_valor.value),
                 "activo": self.chk_activo.value if self.chk_activo.value is not None else False
             }
-          
+      
             ok = False
             if self.item_id == 0 :
                 ok = await self.api_crear(
@@ -503,25 +501,27 @@ class ModalNovedad(ft.AlertDialog):
 
             if not self.cmb_legajo.value:
                 self. cmb_legajo.error_text = "Seleccione legajo"
+                print ("Error en elegajo")
                 valido = False
 
             if self.item_id == 0 :    
                 if not self.cmb_concepto.value:
                     self. cmb_concepto.error_text = "Seleccione concepto"
+                    print ("Error en concepto")
                     valido = False
                 
 
             if self.fecha_desde.get_value() is None:
-                print(self.fecha_desde.get_value())
+       
                 self.fecha_desde.set_error("Debe ingresar la fecha desde")
-            
+                print (f"Error en fechas desde {self.fecha_desde.value}")
                 valido = False
 
            
             if  self.fecha_hasta.get_value() is None:
-                self.fecha_hasta.error = "Debe ingresar la fecha hasta"
+                self.fecha_hasta.set_error("Debe ingresar la fecha hasta")
                 valido = False
-        
+                print (f"Error en fechas hasta {self.fecha_hasta.get_value()}")
 
             if (
                 self.fecha_desde.get_value() 
@@ -566,7 +566,7 @@ class ModalNovedad(ft.AlertDialog):
         return response.status_code in (200, 201)        
     
     async def api_editar(self, data):
-        print(data)
+    
         token = settings.TOKEN
 
         url = f"{settings.URL_BACKEND}/novedades/{self.item_id}"
@@ -613,7 +613,7 @@ class ModalNovedad(ft.AlertDialog):
        if self.obtener_condicion():
             self.cmb_concepto.value = None
 
-            await self.cargar_conceptos(self.modalidad_pago_id)
+            await self.cargar_conceptos()
 
             self.page_ref.update()
 

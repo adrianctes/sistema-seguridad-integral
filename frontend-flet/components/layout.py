@@ -7,8 +7,10 @@ from views.legajos.gestion.gestion_layout import GestionLegajoLayout
 from views.legajos.legajo_crear_view import CrearLegajoView
 from views.Gestion_haberes.conceptos.concepto_list_view import ConceptosListView
 from views.Gestion_haberes.conceptos.concepto_crear_editar_view import CrearEditarConceptoView
-
-
+from views.Gestion_haberes.liquidacion.datos_fijos.datos_fijos_view import DatosFijosView
+from views.Gestion_haberes.liquidacion.datos_fijos.crear_edicion_datos_fijos_view import DatosFijosAltaEdicionView
+from views.Gestion_haberes.liquidacion.liquidacion__haberes.liquidacion_haberes_view import LiquidacionDeHaberesView 
+from views.Gestion_haberes.liquidacion.liquidacion__haberes.crear_edicion_liquidacion_haberes_view import LiquidacionHaberesAltaEdicionView
 class Layout:
     def __init__(self, page: ft.Page):
    
@@ -33,8 +35,12 @@ class Layout:
             "gestion_legajo": GestionLegajoLayout(page),
             "conceptos": ConceptosListView(page),
             "crear_concepto" : CrearEditarConceptoView(page),
-            "novedades" : NovedadesView(page)
-
+            "novedades" : NovedadesView(page),
+            #"datos_fijos_liquidacion" : DatosFijosView(page),
+            "datos_fijos_liquidacion": DatosFijosView(page, self),
+            "crear_editar_datos_fijos": DatosFijosAltaEdicionView(page, self),
+            "liquidacion_haberes" :LiquidacionDeHaberesView(page),
+            "crear_editar_liquidacion_haberes" :LiquidacionHaberesAltaEdicionView(page)
         }
 
         # =========================

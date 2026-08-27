@@ -81,7 +81,7 @@ class LegajoConceptosView(ft.Container):
                         ft.DataColumn(ft.Text("Nombre", size=11)),
                         ft.DataColumn(ft.Text("Cantidad", size=11)),
                         ft.DataColumn(ft.Text("Valor", size=11)),
-                        ft.DataColumn(ft.Text("Estado", size=11)),
+                        ft.DataColumn(ft.Text("Activo", size=11)),
                         ft.DataColumn(ft.Text("Acciones", size=11)),  # 👈 falta esta
                     ],
             rows=[]
@@ -98,8 +98,9 @@ class LegajoConceptosView(ft.Container):
 
         page.run_task(self.listar)
 
-    async def init(self):
-        await self.listar()
+        def init(self):
+           
+            self.page.run_task( self.listar())
 
     def build(self):
 
@@ -134,6 +135,7 @@ class LegajoConceptosView(ft.Container):
                 ),
                 ft.FilledButton(
                                 "Nuevo",
+                                margin=ft.Margin(0, 0, 10, 0),  # izquierda, arriba, derecha, abajo
                                 icon=ft.Icons.ADD,
                                 height=36,
                                 on_click=lambda e: self.page_ref.run_task(self.abrir_modal),
