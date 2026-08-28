@@ -2,6 +2,8 @@ import flet as ft
 from decimal import Decimal
 from datetime import datetime
 
+from core.config import settings
+from components.alerts import Toast
 
 class LiquidacionDetalleModal:
 
@@ -9,6 +11,10 @@ class LiquidacionDetalleModal:
 
         self.page = page
 
+        self.toast = Toast()
+
+        self.data = None
+        
         # =====================================================
         # CONTROLES
         # =====================================================
@@ -97,6 +103,12 @@ class LiquidacionDetalleModal:
             ),
 
             actions=[
+                ft.FilledButton(
+                    "Imprimir",
+                    icon=ft.Icons.PRINT,
+                    on_click=self.imprimir
+                ),
+
                 ft.OutlinedButton(
                     "Cerrar",
                     icon=ft.Icons.CLOSE,
@@ -613,6 +625,9 @@ class LiquidacionDetalleModal:
         if not data:
             return
 
+        self.data = data
+ 
+
         # -----------------------------------------------------
         # Limpiar detalle anterior
         # -----------------------------------------------------
@@ -685,7 +700,127 @@ class LiquidacionDetalleModal:
         self.dialog.open = True
 
         self.page.update()
-    # =========================================================
+
+    async def imprimir_(self, e):
+
+        if not self.data:
+            return
+
+        liquidacion_id = self.data.get("id")
+
+        if not liquidacion_id:
+            return
+
+        token = settings.TOKEN
+
+        if not token:
+            await self.toast.show(
+                self.page,
+                "Sesión expirada",
+                "error"
+            )
+            return
+
+        url = (
+            f"{settings.URL_BACKEND}"
+            f"/liquidaciones/"
+            f"{liquidacion_id}"
+            f"/pdf"
+        )
+
+        print(f"Solicitando PDF: {url}")
+
+        headers = {
+            "Authorization": f"Bearer {token}"
+        }
+
+        try:
+
+            async with httpx.AsyncClient() as client:
+
+                response = await client.get(
+                    url,
+                    headers=headers,
+                    timeout=30
+                )
+
+            if response.status_code != 200:
+
+                print(
+                    f"Error PDF: "
+                    f"{response.status_code} "
+                    f"{response.text}"
+                )
+
+                await self.toast.show(
+                    self.page,
+                    "No se pudo generar el PDF",
+                    "error"
+                )
+
+                return
+
+            # -------------------------------------------------
+            # Guardar PDF
+            # -------------------------------------------------
+
+            ruta = (
+                f"liquidacion_"
+                f"{liquidacion_id}.pdf"
+            )
+
+            with open(ruta, "wb") as archivo:
+
+                archivo.write(
+                    response.content
+                )
+
+            print(
+                f"PDF recibido: "
+                f"{len(response.content)} bytes"
+            )
+
+            print(
+                f"PDF guardado: {ruta}"
+            )
+
+            # -------------------------------------------------
+            # Abrir PDF
+            # -------------------------------------------------
+
+            import os
+
+            ruta_absoluta = os.path.abspath(ruta)
+
+            os.startfile(ruta_absoluta)
+
+        except Exception as ex:
+
+            print(
+                f"Error al imprimir: {ex}"
+            )
+
+            await self.toast.show(
+                self.page,
+                "Error al generar el PDF",
+                "error"
+            )
+        
+        # =========================================================
+    
+    async def imprimir(self, e):
+
+        if not self.data:
+            return
+
+        from .liquidacion_impresion import LiquidacionImpresion
+
+        impresion = LiquidacionImpresion(
+            self.page,
+            self.data
+        )
+
+        await impresion.mostrar()
     # CERRAR
     # =========================================================
 

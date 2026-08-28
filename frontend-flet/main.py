@@ -6,6 +6,7 @@ from components.layout import Layout
 
 
 def main(page: ft.Page):
+
     page.padding = 20
     page.window_maximized = True
     
