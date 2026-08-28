@@ -1,6 +1,8 @@
 import flet as ft
 from decimal import Decimal
 from datetime import datetime
+import base64
+import httpx
 
 from core.config import settings
 from components.alerts import Toast
@@ -805,22 +807,131 @@ class LiquidacionDetalleModal:
                 "Error al generar el PDF",
                 "error"
             )
-        
-        # =========================================================
-    
+
+   
+
     async def imprimir(self, e):
 
-        if not self.data:
+        liquidacion_id = self.data.get("id")
+
+        if not liquidacion_id:
+            print("No se encontró el ID de la liquidación")
             return
 
-        from .liquidacion_impresion import LiquidacionImpresion
+        token = settings.TOKEN
 
-        impresion = LiquidacionImpresion(
-            self.page,
-            self.data
+        if not token:
+            await self.toast.show(
+                self.page,
+                "Sesión expirada",
+                "error"
+            )
+            return
+
+        # --------------------------------------------------
+        # 1. Solicitar token temporal
+        # --------------------------------------------------
+
+        url = (
+            f"{settings.URL_BACKEND}"
+            f"/liquidaciones/"
+            f"{liquidacion_id}"
+            f"/pdf-token"
         )
 
-        await impresion.mostrar()
+        headers = {
+            "Authorization": f"Bearer {token}"
+        }
+
+        print(f"Solicitando token PDF: {url}")
+
+        try:
+
+            async with httpx.AsyncClient() as client:
+
+                response = await client.get(
+                    url,
+                    headers=headers
+                )
+
+            response.raise_for_status()
+
+            data = response.json()
+
+            url_pdf = data.get("url")
+
+            if not url_pdf:
+                print("El backend no devolvió URL del PDF")
+                return
+
+            # --------------------------------------------------
+            # 2. Convertir URL relativa en absoluta
+            # --------------------------------------------------
+
+            if url_pdf.startswith("/"):
+
+                # Si URL_BACKEND es:
+                # http://192.168.101.90:8000/api/v1
+                #
+                # necesitamos quedarnos con:
+                # http://192.168.101.90:8000
+
+                from urllib.parse import urlparse
+
+                partes = urlparse(
+                    settings.URL_BACKEND
+                )
+
+                base_url = (
+                    f"{partes.scheme}://"
+                    f"{partes.netloc}"
+                )
+
+                url_pdf = (
+                    base_url
+                    + url_pdf
+                )
+
+            print(f"URL PDF: {url_pdf}")
+
+            # --------------------------------------------------
+            # 3. Abrir PDF
+            # --------------------------------------------------
+
+            launcher = ft.UrlLauncher()
+
+            await launcher.open_window(
+                url_pdf
+            )
+
+        except httpx.HTTPStatusError as ex:
+
+            print(
+                f"Error HTTP: {ex.response.status_code}"
+            )
+
+            print(
+                f"Respuesta: {ex.response.text}"
+            )
+
+            await self.toast.show(
+                self.page,
+                "No se pudo generar el PDF",
+                "error"
+            )
+
+        except Exception as ex:
+
+            print(
+                f"Error al abrir PDF: {ex}"
+            )
+
+            await self.toast.show(
+                self.page,
+                "Error al abrir el PDF",
+                "error"
+            )
+    # =========================================================
     # CERRAR
     # =========================================================
 

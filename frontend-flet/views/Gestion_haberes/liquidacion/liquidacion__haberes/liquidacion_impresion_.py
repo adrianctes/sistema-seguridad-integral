@@ -2,7 +2,7 @@ import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse
 import html
-
+import webbrowser
 
 class LiquidacionImpresion:
 
@@ -43,10 +43,11 @@ class LiquidacionImpresion:
         print(
             f"Abriendo recibo: {url}"
         )
-
-        await self.page.launch_url(
-            url
-        )
+        webbrowser.open_new_tab(url) 
+        """ await self.page.launch_url(
+            url,
+            web_window_name="_blank"
+        ) """
     # =====================================================
     # SERVIDOR
     # =====================================================
