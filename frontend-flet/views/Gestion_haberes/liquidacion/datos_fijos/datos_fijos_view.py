@@ -443,7 +443,7 @@ class DatosFijosView(ft.Container):
             "Authorization": f"Bearer {token}"
         }
 
-        url = f"{settings.URL_BACKEND}datos-fijos-liquidacion"
+        url = f"{settings.URL_BACKEND}/datos-fijos-liquidacion"
 
         try:
 

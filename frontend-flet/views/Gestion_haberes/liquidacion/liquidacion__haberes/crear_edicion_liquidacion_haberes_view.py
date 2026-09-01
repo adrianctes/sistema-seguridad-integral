@@ -504,9 +504,7 @@ class LiquidacionHaberesAltaEdicionView(ft.Container):
                
     
             except Exception as ex:
-    
-                print(ex)
-    
+  
                 await self.toast.show(
                     self.page_ref,
                     str(ex),
@@ -549,10 +547,10 @@ class LiquidacionHaberesAltaEdicionView(ft.Container):
                     follow_redirects=True
                 )
 
-            print("URL:", response.url)
+            """ print("URL:", response.url)
             print("STATUS:", response.status_code)
             print("RESPONSE:", response.text)
-
+ """
             if response.status_code == 401:
 
                 await self.toast.show(
@@ -1539,6 +1537,7 @@ class LiquidacionHaberesAltaEdicionView(ft.Container):
         for item in self.resultado_liquidacion["detalle"]:
 
             lineas.append({
+                "legajo_novedad_id":  item["novedad_id"],
                 "concepto_id": item["concepto_id"],
                 "concepto": item["concepto"],
                 "cantidad": item["cantidad"],
@@ -1547,7 +1546,7 @@ class LiquidacionHaberesAltaEdicionView(ft.Container):
                 "retencion": item["retencion"],
                 "total": item["total"]
             })
-
+   
         # =====================================================
         # Payload
         # =====================================================

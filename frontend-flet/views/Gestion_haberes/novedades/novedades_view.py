@@ -134,6 +134,8 @@ class NovedadesView(ft.Container):
 
                 ft.DataColumn(ft.Text("Valor", size=11)),
 
+                ft.DataColumn(ft.Text("Estado", size=11)),
+
                 ft.DataColumn(ft.Text("Acciones", size=11)),
             ],
 
@@ -588,7 +590,7 @@ class NovedadesView(ft.Container):
         pagina = datos[inicio:fin]
 
         for item in pagina:
-    
+   
             self.table.rows.append(
 
                 ft.DataRow(
@@ -669,12 +671,23 @@ class NovedadesView(ft.Container):
                                 size=11
                             )
                         ),
+
+                     ft.DataCell(
+                                ft.Text(
+                                    "PENDIENTE"
+                                    if item["liquidacion_detalle_id"] is None
+                                    else "LIQUIDADA",
+                                    size=11
+                                )
+                            ),
                         
                         ft.DataCell(
 
                             ft.Row(
 
                                 spacing=0,
+
+                              
 
                                 controls=[
 
@@ -685,6 +698,8 @@ class NovedadesView(ft.Container):
                                         icon_size=18,
 
                                         tooltip="Editar",
+
+                                        disabled=item["liquidacion_detalle_id"] is not None,
 
                                         on_click=lambda e,
                                         x=item: self.page_ref.run_task(
@@ -702,6 +717,8 @@ class NovedadesView(ft.Container):
                                         icon_color="red",
 
                                         tooltip="Eliminar",
+
+                                        disabled=item["liquidacion_detalle_id"] is not None,
 
                                         on_click=lambda e,
                                         x=item: self.page_ref.run_task(
