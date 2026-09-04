@@ -12,15 +12,16 @@ from views.Gestion_haberes.liquidacion.datos_fijos.crear_edicion_datos_fijos_vie
 from views.Gestion_haberes.liquidacion.liquidacion__haberes.liquidacion_haberes_view import LiquidacionDeHaberesView 
 from views.Gestion_haberes.liquidacion.liquidacion__haberes.crear_edicion_liquidacion_haberes_view import LiquidacionHaberesAltaEdicionView
 class Layout:
-    def __init__(self, page: ft.Page):
-   
+    def __init__(self, page, on_logout):
         self.page = page
+        self.on_logout = on_logout
               
         # =========================
         # SIDEBAR
         # =========================
         self.sidebar = Sidebar(
             page,
+            on_logout,
             self.change_view
         )
 

@@ -3,14 +3,15 @@ import flet as ft
 
 class Sidebar(ft.Container):
 
-    def __init__(self, page, change_page):
+    def __init__(self, page, on_logout, change_page):
 
         super().__init__()
 
         self.page_ref = page
+        self.on_logout = on_logout
         self.change_page = change_page
 
-        self.active = "dashboard"
+        self.active = "legajos"# "dashboard"
 
         # PALETA
         self.bg = "#040B1C"
@@ -53,7 +54,7 @@ class Sidebar(ft.Container):
             ),
 
             padding=ft.Padding.symmetric(
-                horizontal=16
+                horizontal=8
             ),
 
             ink=True,
@@ -130,13 +131,19 @@ class Sidebar(ft.Container):
 
     def build(self):
 
+        usuario = self.page_ref.session.store.get("usuario") or {}
+        nombre = usuario.get("nombre", "")
+        apellido = usuario.get("apellido", "")
+        rol = usuario.get("rol", "")
+
+
         self.width = 245
 
         self.bgcolor = self.bg
 
         self.padding = ft.Padding.only(
             top=12,
-            left=8,
+            left=0,
             right=8,
             bottom=18
         )
@@ -209,11 +216,7 @@ class Sidebar(ft.Container):
 
                 # MENU
 
-                self.menu_item(
-                    ft.Icons.GRID_VIEW_ROUNDED,
-                    "Dashboard",
-                    "dashboard"
-                ),
+                
 
                 self.menu_item(
                     ft.Icons.BADGE_OUTLINED,
@@ -230,6 +233,7 @@ class Sidebar(ft.Container):
                     bgcolor="#091224",
 
                     padding=ft.Padding.only(
+                        left =0,
                         top=4,
                         bottom=4
                     ),
@@ -308,35 +312,14 @@ class Sidebar(ft.Container):
                                             ),
 
                                             self.menu_item(
-                                                ft.Icons.ANALYTICS_OUTLINED,
-                                                "Simulación",
-                                                "simulacion_liquidacion"
-                                            ),
-                                            self.menu_item(
                                                 ft.Icons.CALCULATE_OUTLINED,
                                                 "Haberes",
                                                 "liquidacion_haberes"
-                                            ),
+                                            ),          
 
-                                            self.menu_item(
-                                                ft.Icons.SEARCH,
-                                                "Consulta",
-                                                "consulta_liquidacion"
-                                            ),
-
-                                            self.menu_item(
-                                                ft.Icons.DESCRIPTION_OUTLINED,
-                                                "Emisión de recibos",
-                                                "emision_recibos"
-                                            ),
+                                           
                                         ],
                                     ),
-
-                            self.menu_item(
-                                ft.Icons.DESCRIPTION_OUTLINED,
-                                "Recibos",
-                                "recibos"
-                            ),
 
                             self.menu_item(
                                 ft.Icons.CALCULATE_OUTLINED,
@@ -350,34 +333,109 @@ class Sidebar(ft.Container):
                                 "novedades"
                             ),
 
-                            self.menu_item(
-                                ft.Icons.MONEY_OFF_CSRED_ROUNDED,
-                                "Deducciones",
-                                "deducciones"
-                            ),
+                            
 
                         ]
                     )
                 ),
 
-                self.menu_item(
-                    ft.Icons.FOLDER_OPEN_OUTLINED,
-                    "Turnos",
-                    "turnos"
-                ),
-
-                self.menu_item(
-                    ft.Icons.NOTIFICATIONS_NONE_ROUNDED,
-                    "Notificaciones",
-                    "notificaciones"
-                ),
-
-                self.menu_item(
-                    ft.Icons.SETTINGS_OUTLINED,
-                    "Configuración",
-                    "configuracion"
-                ),
-
+      
+                ft.Container(
+                        content=ft.ExpansionTile(
+                            title=ft.Text(
+                                "Seguridad",
+                                size=14,
+                                color=self.text_color,
+                                weight=ft.FontWeight.W_500
+                            ),
+                            leading=ft.Icon(
+                                ft.Icons.SECURITY_ROUNDED,
+                                color=self.icon_color,
+                                size=20
+                            ),
+                            collapsed_text_color=self.text_color,
+                            text_color="white",
+                            icon_color=self.icon_color,
+                            collapsed_icon_color=self.icon_color,
+                            tile_padding=ft.Padding.symmetric(
+                                horizontal=16
+                            ),
+                            controls_padding=ft.Padding.only(
+                                left=12,
+                                right=0,
+                                bottom=6
+                            ),
+                            controls=[
+                                ft.ExpansionTile(
+                                    leading=ft.Icon(
+                                        ft.Icons.PERSON_OUTLINE_ROUNDED,
+                                        color=self.icon_color,
+                                        size=20
+                                    ),
+                                    title=ft.Text(
+                                        "Usuarios",
+                                        size=14,
+                                        color=self.text_color,
+                                        weight=ft.FontWeight.W_500
+                                    ),
+                                    tile_padding=ft.Padding.only(
+                                        left=16,
+                                        right=16
+                                    ),
+                                    controls_padding=ft.Padding.only(
+                                        left=16
+                                    ),
+                                    collapsed_icon_color=self.icon_color,
+                                    icon_color=self.icon_color,
+                                    controls=[
+                                      
+                                        self.menu_item(
+                                            ft.Icons.MANAGE_ACCOUNTS_ROUNDED,
+                                            "Gestionar usuarios",
+                                            "gestionar_usuarios"
+                                        ),
+                                        
+                                        self.menu_item(
+                                            ft.Icons.LOCK_RESET_ROUNDED,
+                                            "Cambiar contraseña",
+                                            "cambiar_contrasena"
+                                        ),
+                                    ],
+                                ),
+                                ft.ExpansionTile(
+                                    leading=ft.Icon(
+                                        ft.Icons.HISTORY_ROUNDED,
+                                        color=self.icon_color,
+                                        size=20
+                                    ),
+                                    title=ft.Text(
+                                        "Auditoría",
+                                        size=14,
+                                        color=self.text_color,
+                                        weight=ft.FontWeight.W_500
+                                    ),
+                                    tile_padding=ft.Padding.only(
+                                        left=16,
+                                        right=16
+                                    ),
+                                    controls_padding=ft.Padding.only(
+                                        left=16
+                                    ),
+                                    collapsed_icon_color=self.icon_color,
+                                    icon_color=self.icon_color,
+                                    controls=[
+                                        self.menu_item(
+                                            ft.Icons.LIST_ALT_ROUNDED,
+                                            "Registro de actividades",
+                                            "registro_actividades"
+                                        )
+                                    ],
+                                ),
+                            ]
+                        ),
+                        
+                    ),
+                                                
                 ft.Container(expand=True),
 
                 ft.Divider(
@@ -387,41 +445,96 @@ class Sidebar(ft.Container):
 
                 # FOOTER
 
-                ft.Container(
-
-                    height=52,
-
-                    border_radius=10,
-
-                    padding=ft.Padding.symmetric(
-                        horizontal=16
+                 ft.Container(
+    padding=ft.Padding.only(
+        left=8,
+        right=8,
+        top=10,
+        bottom=8
+    ),
+    content=ft.Column(
+        spacing=10,
+        controls=[
+            ft.Row(
+                spacing=10,
+                controls=[
+                    ft.Container(
+                        width=38,
+                        height=38,
+                        border_radius=20,
+                        bgcolor="#FFFFFF10",
+                        alignment=ft.Alignment.CENTER,
+                        content=ft.Text(
+                            (
+                                nombre[:1] + apellido[:1]
+                            ).upper(),
+                            size=13,
+                            weight=ft.FontWeight.BOLD,
+                            color="white"
+                        )
                     ),
 
-                    ink=True,
-
-                    content=ft.Row(
-
-                        spacing=14,
-
+                    ft.Column(
+                        spacing=2,
+                        expand=True,
                         controls=[
-
-                            ft.Icon(
-                                ft.Icons.LOGOUT_ROUNDED,
-                                size=20,
-                                color=self.icon_color
+                            ft.Text(
+                                f"{nombre} {apellido}",
+                                size=13,
+                                weight=ft.FontWeight.BOLD,
+                                color="white",
+                                max_lines=1,
+                                overflow=ft.TextOverflow.ELLIPSIS
                             ),
 
                             ft.Text(
-                                "Cerrar sesión",
-
-                                size=14,
-
-                                color=self.text_color
+                                rol,
+                                size=11,
+                                color=self.text_color,
+                                max_lines=1,
+                                overflow=ft.TextOverflow.ELLIPSIS
                             )
-
                         ]
                     )
-                )
+                ]
+            ),
 
+            ft.Container(
+                height=45,
+                border_radius=10,
+                padding=ft.Padding.symmetric(
+                    horizontal=8
+                ),
+                ink=True,
+                on_click=self.cerrar_sesion,
+                content=ft.Row(
+                    spacing=12,
+                    controls=[
+                        ft.Icon(
+                            ft.Icons.LOGOUT_ROUNDED,
+                            size=20,
+                            color=self.icon_color
+                        ),
+
+                        ft.Text(
+                            "Cerrar sesión",
+                            size=14,
+                            color=self.text_color
+                        )
+                    ]
+                )
+            )
+        ]
+    )
+)
             ]
-        )
+        ) 
+
+    async def cerrar_sesion(self, e):
+        # Eliminar datos de la sesión
+        if self.page.session.store.get("access_token") is not None:
+            self.page.session.store.remove("access_token")
+            self.page.session.store.remove("usuario")
+
+        # Volver al login
+        self.on_logout()

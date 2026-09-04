@@ -3,7 +3,7 @@ import os
 import flet as ft
 import platform
 from components.layout import Layout
-
+from views.login.login_view import LoginView
 
 def main(page: ft.Page):
 
@@ -27,18 +27,35 @@ def main(page: ft.Page):
     "Darwin": "macOS Desktop",
     "Linux": "Linux Desktop"
 }.get(sistema, f"{sistema or 'Movil'}")
+
+    def mostrar_login(): 
+        login = LoginView( 
+            page=page, 
+            on_login=mostrar_legajos )
+        page.controls.clear() 
+        page.add(login.build())
+        page.update()
     
+    def mostrar_legajos():
+        layout = Layout(
+            page,
+            on_logout=mostrar_login
+        )
 
-    layout = Layout(page)
-
-    page.layout = layout
+        page.layout = layout
+        page.controls.clear()
+        page.add(layout.build())
+        layout.change_view("legajos")
+        page.update()
+    
+    """ page.layout = layout
     page.add(layout.build() )
   
 
-    layout.change_view("dashboard")
+    layout.change_view("dashboard") """
 
-    page.update()
-
+    #page.update()
+    mostrar_login()
 
 if __name__ == "__main__":
     ft.run(main) 
