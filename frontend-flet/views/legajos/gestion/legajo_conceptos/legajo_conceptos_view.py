@@ -216,7 +216,7 @@ class LegajoConceptosView(ft.Container):
 
     async def listar(self, e=None):
 
-        token = settings.TOKEN
+        token = self.page_ref.session.store.get("access_token")
 
         if not token:
             await self.toast.show(self.page_ref, "Sesión expirada", "error")
@@ -488,7 +488,7 @@ class LegajoConceptosView(ft.Container):
     
     async def eliminar_item(self, item):
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         legajo_id = item["legajo_id"]
         item_id = item["id"]

@@ -335,7 +335,7 @@ class ConceptosListView(ft.Container):
     
     async def listar(self, e=None):
 
-        token = settings.TOKEN
+        token = self.page_ref.session.store.get("access_token")
 
         if not token:
             await self.toast.show(

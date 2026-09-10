@@ -502,7 +502,7 @@ class DatosFijosAltaEdicionView(ft.Container):
     
     async def cargar(self, id):
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         headers = {
 
@@ -701,7 +701,7 @@ class DatosFijosAltaEdicionView(ft.Container):
     
     async def api_crear(self,  data):
         
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         url = f"{settings.URL_BACKEND}/liquidaciones/datos-fijos"
         
@@ -719,7 +719,7 @@ class DatosFijosAltaEdicionView(ft.Container):
     
     async def api_editar(self, data):
     
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token") 
 
         url = f"{settings.URL_BACKEND}/datos-fijos-liquidacion/{self.id}"
 

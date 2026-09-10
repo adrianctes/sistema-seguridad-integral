@@ -22,7 +22,7 @@ class LicenciasView(ft.Container):
             ]
         )
 
-    async def load(self, legajo_id=None):
+    async def load(self):
 
         self.lbl.value = "Pagina en Contruccion"
 

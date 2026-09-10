@@ -558,7 +558,7 @@ class LegajosView(ft.Container):
 
     async def listar_legajos(self, e=None):
 
-        token = self.page.session.store.get("access_token")
+        token = self.page_ref.session.store.get("access_token")
 
         if not token:
             await self.toast.show(
@@ -678,7 +678,7 @@ class LegajosView(ft.Container):
     
     async def eliminar_item(self, item):
 
-        token = settings.TOKEN
+        token = self.page_ref.session.store.get("access_token")
 
         if not token:
 

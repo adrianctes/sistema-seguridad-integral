@@ -223,10 +223,12 @@ class CrearEditarConceptoView(ft.Container):
     async def cargar_clasificaciones(self):
 
         try:
+            token = self.page.session.store.get("access_token")
+            
             async with httpx.AsyncClient() as client:
                 response = await client.get(
                     f"{settings.URL_BACKEND}/clasificacion-conceptos",
-                    headers={"Authorization": f"Bearer {settings.TOKEN}"}
+                    headers={"Authorization": f"Bearer {token}"}
                 )
 
             if response.status_code != 200:
@@ -246,10 +248,11 @@ class CrearEditarConceptoView(ft.Container):
 
     async def obtener_concepto_by_id(self, id: int):
 
+        token = self.page.session.store.get("access_token")
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{settings.URL_BACKEND}/conceptos/{id}",
-                headers={"Authorization": f"Bearer {settings.TOKEN}"}
+                headers={"Authorization": f"Bearer {token}"}
             )
 
         if response.status_code != 200:
@@ -381,7 +384,7 @@ class CrearEditarConceptoView(ft.Container):
 
     async def api_crear(self, data):
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         url = f"{settings.URL_BACKEND}/conceptos"
 
@@ -399,7 +402,7 @@ class CrearEditarConceptoView(ft.Container):
     
     async def api_editar(self, data):
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         url = f"{settings.URL_BACKEND}/conceptos/{self.concepto_id}"
 

@@ -25,6 +25,10 @@ class Sidebar(ft.Container):
 
         self.divider = "#111827"
 
+        self.usuario_id = None
+
+        self.ayn_usuario = None
+
         self.build()
 
     def set_active(self, route):
@@ -37,7 +41,7 @@ class Sidebar(ft.Container):
 
         self.update()
 
-    def menu_item(self, icon, title, route):
+    """ def menu_item(self, icon, title, route):
 
         active = self.active == route
 
@@ -127,13 +131,114 @@ class Sidebar(ft.Container):
 
                 ]
             )
+        ) """
+
+    def seleccionar_menu(self, e, route):
+
+        self.set_active(route)
+
+        if route == "cambiar_contrasena":
+
+            self.change_page(
+                route,
+                self.usuario_id,
+                self.ayn_usuario
+            )
+
+        else:
+
+            self.change_page(route)
+            
+    def menu_item(self, icon, title, route):
+
+        active = self.active == route
+
+        return ft.Container(
+            height=56,
+            border_radius=10,
+
+            bgcolor=(
+                self.active_bg
+                if active
+                else None
+            ),
+
+            padding=ft.Padding.symmetric(
+                horizontal=8
+            ),
+
+            ink=True,
+
+            animate=ft.Animation(
+                180,
+                ft.AnimationCurve.EASE_IN_OUT
+            ),
+
+            on_click=lambda e: self.seleccionar_menu(
+                e,
+                route
+            ),
+
+            content=ft.Row(
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+
+                controls=[
+                    ft.Row(
+                        spacing=14,
+
+                        controls=[
+                            ft.Icon(
+                                icon,
+                                size=20,
+
+                                color=(
+                                    self.active_color
+                                    if active
+                                    else self.icon_color
+                                )
+                            ),
+
+                            ft.Text(
+                                title,
+                                size=14,
+
+                                color=(
+                                    self.active_text
+                                    if active
+                                    else self.text_color
+                                ),
+
+                                weight=(
+                                    ft.FontWeight.BOLD
+                                    if active
+                                    else ft.FontWeight.W_500
+                                )
+                            )
+                        ]
+                    ),
+
+                    ft.Container(
+                        width=4,
+                        height=26,
+                        border_radius=20,
+
+                        bgcolor=(
+                            self.active_color
+                            if active
+                            else None
+                        )
+                    )
+                ]
+            )
         )
 
     def build(self):
 
         usuario = self.page_ref.session.store.get("usuario") or {}
+        self.usuario_id= usuario.get("id", 0)
         nombre = usuario.get("nombre", "")
         apellido = usuario.get("apellido", "")
+        self.ayn_usuario = f"{apellido} {nombre}"
         rol = usuario.get("rol", "")
 
 

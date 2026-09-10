@@ -114,8 +114,13 @@ class LoginView:
 
     async def login(self, e):
 
+        self.btn_ingresar.disabled = True
+
         usuario = self.txt_usuario.value
         password = self.txt_password.value
+
+        usuario = "amiño"
+        password = "NuevaClave123"
 
         if not usuario or not password:
             await self.toast.show(
@@ -124,36 +129,52 @@ class LoginView:
                                 "error"
                             )
             return
-        
-        resultado = await self.auth(
-                usuario,
-                password
-            )
 
-        if not resultado:
-                await self.toast.show(
-                    self.page,
-                    "Usuario o contraseña incorrectos.",
-                    "error"
+
+       
+        self.btn_ingresar.content = ft.ProgressRing(
+            width=20,
+            height=20,
+            stroke_width=2,
+        )
+
+        self.page.update()
+        try:
+            resultado = await self.auth(
+                    usuario,
+                    password
                 )
 
-                return
+            if not resultado:
+                    await self.toast.show(
+                        self.page,
+                        "Usuario o contraseña incorrectos.",
+                        "error"
+                    )
 
-        usuario  =     resultado["usuario"]
+                    return
 
-        # Guardar token
-        token = resultado["access_token"]
+            usuario  =     resultado["usuario"]
 
-        self.page.session.store.set("access_token", token)
+            # Guardar token
+            token = resultado["access_token"]
 
-        self.page.session.store.set("usuario", usuario)
+            self.page.session.store.set("access_token", token)
+
+            self.page.session.store.set("usuario", usuario)
 
 
-        # ---------------------------------
-        # TEMPORAL
-        # ---------------------------------
+            # ---------------------------------
+            # TEMPORAL
+            # ---------------------------------
 
-        self.on_login()
+            self.on_login()
+        finally:
+            # Restaurar botón
+            self.btn_ingresar.disabled = False
+            self.btn_ingresar.content = ft.Text("Ingresar")
+
+            self.page.update()
 
     async def auth(self, usuario: str, password: str):
         
@@ -169,7 +190,7 @@ class LoginView:
                 }
             )
 
-        print(response)
+
         if response.status_code != 200:
             await self.toast.show(
                 self.page,

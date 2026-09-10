@@ -11,6 +11,10 @@ from views.Gestion_haberes.liquidacion.datos_fijos.datos_fijos_view import Datos
 from views.Gestion_haberes.liquidacion.datos_fijos.crear_edicion_datos_fijos_view import DatosFijosAltaEdicionView
 from views.Gestion_haberes.liquidacion.liquidacion__haberes.liquidacion_haberes_view import LiquidacionDeHaberesView 
 from views.Gestion_haberes.liquidacion.liquidacion__haberes.crear_edicion_liquidacion_haberes_view import LiquidacionHaberesAltaEdicionView
+from views.usuarios.usuarios_view import UsuariosView
+from views.usuarios.usuario_crear_view import CrearUsuarioView
+from views.usuarios.usuario_cambiar_password import CambiarPasswordView
+
 class Layout:
     def __init__(self, page, on_logout):
         self.page = page
@@ -37,7 +41,9 @@ class Layout:
             "conceptos": ConceptosListView(page),
             "crear_concepto" : CrearEditarConceptoView(page),
             "novedades" : NovedadesView(page),
-            #"datos_fijos_liquidacion" : DatosFijosView(page),
+            "gestionar_usuarios" : UsuariosView(page),
+            "crear_usuario": CrearUsuarioView(page),
+            "cambiar_contrasena":CambiarPasswordView(page,   self.on_logout),
             "datos_fijos_liquidacion": DatosFijosView(page, self),
             "crear_editar_datos_fijos": DatosFijosAltaEdicionView(page, self),
             "liquidacion_haberes" :LiquidacionDeHaberesView(page),
@@ -118,7 +124,7 @@ class Layout:
             )
 
         self.page.update()'''
-    def change_view(
+    """  def change_view(
         self,
         view_name,
         *args
@@ -148,6 +154,34 @@ class Layout:
                     size=26
                 )
             )
+
+        self.page.update()
+
+        return vista
+ """
+    def change_view(self, view_name, *args):
+
+        if view_name not in self.views:
+            self.content.content = ft.Container(
+                content=ft.Text(
+                    f"Vista '{view_name}' en construcción",
+                    size=26
+                )
+            )
+            self.page.update()
+            return None
+
+        vista = self.views[view_name]
+
+        # Configurar la vista
+        if hasattr(vista, "set_mode") and args:
+            vista.set_mode(*args)
+
+        self.content.content = vista
+
+        # Cargar datos si la vista lo necesita
+        if hasattr(vista, "load"):
+            self.page.run_task(vista.load, *args)
 
         self.page.update()
 

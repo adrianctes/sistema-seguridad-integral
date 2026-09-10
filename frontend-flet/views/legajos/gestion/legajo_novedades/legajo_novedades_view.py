@@ -374,7 +374,7 @@ class LegajoNovedadesView(ft.Container):
 
     async def listar(self, e=None):
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         if not token:
 

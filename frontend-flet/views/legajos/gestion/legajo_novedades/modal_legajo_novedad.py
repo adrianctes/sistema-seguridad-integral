@@ -372,7 +372,7 @@ class ModalLegajoNovedad(ft.AlertDialog):
 
     async def obtener_legajo_by_id(self, legajo_id: int):
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         url = f"{settings.URL_BACKEND}/legajos/{legajo_id}"
 

@@ -505,7 +505,7 @@ class EditarLegajoView(ft.Container):
    
     async def api_editar(self, data):
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         url = f"{settings.URL_BACKEND}/legajos/{self.legajo_id}"
 
@@ -633,7 +633,7 @@ class EditarLegajoView(ft.Container):
         self.page_ref.update()
 
     async def obtener_legajo_by_id(self,legajo_id:int):
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
         url = f"{settings.URL_BACKEND}/legajos/id/{legajo_id}"
         async with httpx.AsyncClient() as client:
             response = await client.get(

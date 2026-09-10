@@ -14,7 +14,7 @@ class CatalogosService:
     @classmethod
     async def cargar_bancos(cls):
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         async with httpx.AsyncClient() as client:
 
@@ -32,7 +32,7 @@ class CatalogosService:
     @classmethod
     async def cargar_categorias(cls):
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         async with httpx.AsyncClient() as client:
 
@@ -50,7 +50,7 @@ class CatalogosService:
     @classmethod
     async def cargar_modalidades_liquidacion(cls):
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         async with httpx.AsyncClient() as client:
 

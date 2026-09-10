@@ -332,7 +332,7 @@ class HistoriaLaboralModal:
 
     async def api_crear(self, data):
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         url = (
             f"{settings.URL_BACKEND}/historia-laboral"

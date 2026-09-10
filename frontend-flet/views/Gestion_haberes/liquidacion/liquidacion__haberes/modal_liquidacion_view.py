@@ -712,8 +712,8 @@ class LiquidacionDetalleModal:
 
         if not liquidacion_id:
             return
-
-        token = settings.TOKEN
+        
+        token = self.page.session.store.get("access_token")
 
         if not token:
             await self.toast.show(
@@ -818,7 +818,7 @@ class LiquidacionDetalleModal:
             print("No se encontró el ID de la liquidación")
             return
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         if not token:
             await self.toast.show(

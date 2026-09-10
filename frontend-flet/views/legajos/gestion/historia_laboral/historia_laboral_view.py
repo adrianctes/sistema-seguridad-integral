@@ -247,7 +247,7 @@ class HistoriaLaboralView(ft.Container):
             ]
         )
 
-    async def load(self, legajo_id= None, modalidad_pago_id = None ):
+    async def load(self, legajo_id= None ):
   
         if legajo_id:
             self.legajo_id = legajo_id
@@ -263,7 +263,7 @@ class HistoriaLaboralView(ft.Container):
 
     async def listar_historial(self):
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         url = (
             f"{settings.URL_BACKEND}"

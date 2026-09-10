@@ -376,7 +376,7 @@ class LiquidacionDeHaberesView(ft.Container):
     
     async def listar(self, e=None):
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         if not token:
 
@@ -461,7 +461,7 @@ class LiquidacionDeHaberesView(ft.Container):
     
         await self.cargar_datos_fijos_abiertos()
     
-        #await self.listar() 
+
 
     def load_data(self):
 
@@ -739,7 +739,7 @@ class LiquidacionDeHaberesView(ft.Container):
                
     async def eliminar_item(self, item):
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
         item_id = item["id"]
 
         url = (
@@ -810,7 +810,8 @@ class LiquidacionDeHaberesView(ft.Container):
             return False
     
     async def cargar_datos_fijos_abiertos(self):
-        token = settings.TOKEN
+
+        token = self.page.session.store.get("access_token")
     
         if not token:
 
@@ -892,7 +893,7 @@ class LiquidacionDeHaberesView(ft.Container):
 
     async def obtener_liquidacion(self, liquidacion_id):
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         if not token:
 

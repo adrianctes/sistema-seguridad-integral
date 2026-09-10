@@ -549,7 +549,7 @@ class ModalNovedad(ft.AlertDialog):
             return valido
 
     async def api_crear(self, data):
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         url = f"{settings.URL_BACKEND}/novedades"
 
@@ -567,7 +567,7 @@ class ModalNovedad(ft.AlertDialog):
     
     async def api_editar(self, data):
     
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         url = f"{settings.URL_BACKEND}/novedades/{self.item_id}"
 

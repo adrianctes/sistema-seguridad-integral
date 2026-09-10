@@ -375,7 +375,7 @@ class ModalLegajo:
     # =========================
     async def api_crear(self, data):
     
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         url = f"{settings.URL_BACKEND}/legajos"
 
@@ -420,7 +420,7 @@ class ModalLegajo:
             return False
     async def api_editar(self, data):
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         url = f"{settings.URL_BACKEND}/legajos/{self.legajo_id}"
 
@@ -438,7 +438,7 @@ class ModalLegajo:
     
     async def cargar_categoria(self):
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         headers = {
             "Authorization": f"Bearer {token}"
@@ -467,7 +467,7 @@ class ModalLegajo:
         self.page.update()
     async def cargar_modalidad(self):
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         headers = {
             "Authorization": f"Bearer {token}"

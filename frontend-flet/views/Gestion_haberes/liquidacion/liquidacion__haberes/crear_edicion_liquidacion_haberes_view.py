@@ -448,7 +448,7 @@ class LiquidacionHaberesAltaEdicionView(ft.Container):
             params = {}
             params["estado"] = "ABIERTO"      
     
-            token = settings.TOKEN
+            token = self.page.session.store.get("access_token")
     
             if not token:
     
@@ -513,7 +513,7 @@ class LiquidacionHaberesAltaEdicionView(ft.Container):
 
     async def buscar_legajos(self):
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         if not token:
             await self.toast.show(
@@ -1470,7 +1470,7 @@ class LiquidacionHaberesAltaEdicionView(ft.Container):
 
     async def registrar_liquidacion(self):
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         if not token:
             await self.toast.show(
@@ -1854,7 +1854,7 @@ class LiquidacionHaberesAltaEdicionView(ft.Container):
     
     async def api_liquidar(self):
         
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
           
         if not token:
             await self.toast.show(

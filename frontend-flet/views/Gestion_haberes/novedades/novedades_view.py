@@ -505,7 +505,7 @@ class NovedadesView(ft.Container):
             params["busqueda"] = self.txt_busqueda.value
 
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
 
         if not token:
 
@@ -842,7 +842,7 @@ class NovedadesView(ft.Container):
    
     async def eliminar_item(self, item):
 
-        token = settings.TOKEN
+        token = self.page.session.store.get("access_token")
         item_id = item["id"]
 
         url = (
