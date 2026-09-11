@@ -316,12 +316,17 @@ class CrearLegajoView(ft.Container):
         )
 
     async def load(self):
+
         self.limpiar()
-        await CatalogosService.refresh()
-        await self.cargar_banco()
-        await self.cargar_categoria()
-        await self.cargar_modalidad_liquidacion()
-        await self.cargar_modalidad_pago()
+
+        token = self.page_ref.session.store.get("access_token")
+
+        await CatalogosService.refresh(token)
+
+        await self.cargar_banco(token)
+        await self.cargar_categoria(token)
+        await self.cargar_modalidad_liquidacion(token)
+        await self.cargar_modalidad_pago(token)
         
     def limpiar(self):
     

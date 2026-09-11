@@ -25,6 +25,7 @@ ENV_FILE = BASE_DIR / ".env"
 class Settings(BaseSettings):
     TOKEN: str
     URL_BACKEND: str
+    PASSWORD_RESET_DEFAULT: str
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,

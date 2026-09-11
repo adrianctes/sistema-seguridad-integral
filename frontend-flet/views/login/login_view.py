@@ -120,7 +120,7 @@ class LoginView:
         password = self.txt_password.value
 
         usuario = "amiño"
-        password = "NuevaClave123"
+        password = "newReset123"
 
         if not usuario or not password:
             await self.toast.show(
@@ -146,11 +146,11 @@ class LoginView:
                 )
 
             if not resultado:
-                    await self.toast.show(
+                    """  await self.toast.show(
                         self.page,
                         "Usuario o contraseña incorrectos.",
                         "error"
-                    )
+                    ) """
 
                     return
 
@@ -192,9 +192,12 @@ class LoginView:
 
 
         if response.status_code != 200:
+            data = response.json()
+           
             await self.toast.show(
                 self.page,
-                    "Usuario o contraseña incorrectos.",
+                    data.get("detail"),
+                    #"Usuario o contraseña incorrectos.",
                     "error"
             )
             return None

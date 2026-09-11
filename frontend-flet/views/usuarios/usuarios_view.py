@@ -4,6 +4,82 @@ import httpx
 
 from components.alerts import Toast
 from core.config import settings
+class AccionUsuario:
+
+    def __init__(self, vista):
+        self.vista = vista
+
+    def titulo(self):
+        raise NotImplementedError
+
+    def mensaje(self, item):
+        raise NotImplementedError
+
+    def texto_confirmar(self):
+        raise NotImplementedError
+
+    async def ejecutar(self, item):
+        raise NotImplementedError
+
+class EliminarUsuario(AccionUsuario):
+
+    def titulo(self):
+        return "Confirmar eliminación"
+
+    def mensaje(self, item):
+        return (
+            "¿Realmente desea eliminar "
+            f"el usuario '{item['usuario']}'?"
+        )
+
+    def texto_confirmar(self):
+        return "Eliminar"
+
+    async def ejecutar(self, item):
+        await self.vista.eliminar_usuario(item)
+
+class ResetearPassword(AccionUsuario):
+
+    def titulo(self):
+        return "Confirmar reset de contraseña"
+
+    def mensaje(self, item):
+        return (
+            "¿Realmente desea resetear la contraseña "
+            f"del usuario '{item['usuario']}'?"
+        )
+
+    def texto_confirmar(self):
+        return "Resetear"
+
+    async def ejecutar(self, item):
+        await self.vista.resetear_password(item)
+
+class CambiarEstadoUsuario(AccionUsuario):
+
+    def titulo(self):
+        return "Confirmar cambio de estado"
+
+    def mensaje(self, item):
+
+        estado_actual = item.get("activo", False)
+
+        nuevo_estado = (
+            "desactivar"
+            if estado_actual
+            else "activar"
+        )
+
+        return (
+            f"¿Realmente desea {nuevo_estado} "
+            f"el usuario '{item['usuario']}'?"
+        )
+
+    def texto_confirmar(self):
+        return "Cambiar estado"
+
+    async def ejecutar(self, item):
+        await self.vista.cambiar_estado(item)
 
 
 class UsuariosView(ft.Container):
@@ -720,10 +796,25 @@ class UsuariosView(ft.Container):
                                         on_click=lambda e,
                                         item=item:
                                             self.page_ref.run_task(
-                                                self.cambiar_estado,
-                                                item
+                                                self.confirmar_accion,
+                                                item,
+                                                CambiarEstadoUsuario(self)
                                             )
                                     ),
+                                    ft.IconButton(
+                                    
+                                            icon=ft.Icons.LOCK_RESET,
+                                            icon_size=18,
+                                            icon_color="orange",
+                                            tooltip="Resetear  password",
+                                            on_click=lambda e,
+                                            item=item:
+                                            self.page_ref.run_task(
+                                                self.confirmar_accion,
+                                                       item,
+                                                       ResetearPassword(self)
+                                                    )
+                                            ),
 
                                     ft.IconButton(
 
@@ -738,8 +829,9 @@ class UsuariosView(ft.Container):
                                         on_click=lambda e,
                                         item=item:
                                             self.page_ref.run_task(
-                                                self.confirmar_eliminar,
-                                                item
+                                                self.confirmar_accion,
+                                                item,
+                                                EliminarUsuario(self)
                                             )
                                     )
                                 ]
@@ -890,98 +982,78 @@ class UsuariosView(ft.Container):
     # CAMBIAR ESTADO
     # =========================================================
 
-    async def cambiar_estado(
-        self,
-        item
-    ):
-
-        token = self.page_ref.session.store.get(
-            "access_token"
-        )
-
-        if not token:
-
-            await self.toast.show(
-                self.page_ref,
-                "Sesión expirada",
-                "error"
-            )
-
-            return
-
-        headers = {
-            "Authorization": f"Bearer {token}"
-        }
-
-        usuario_id = item["id"]
-
-        url = (
-            f"{settings.URL_BACKEND}"
-            f"/usuarios/{usuario_id}/estado"
-        )
-
-        params = {
-                    "activo":  not item["activo"]
-                }
-        try:
-
-            async with httpx.AsyncClient() as client:
-
-                response = await client.patch(
-                    url,
-                    headers=headers,
-                    params=params
-                )
-
-            if response.status_code == 401:
-
-                await self.toast.show(
-                    self.page_ref,
-                    "Token inválido o expirado",
-                    "error"
-                )
-
-                return
-
-            if response.status_code not in (
-                200,
-                204
-            ):
-
-                await self.toast.show(
-                    self.page_ref,
-                    f"Error API: "
-                    f"{response.status_code}",
-                    "error"
-                )
-
-                return
-
-            await self.toast.show(
-                self.page_ref,
-                "Estado actualizado",
-                "success"
-            )
-
-            await self.buscar()
-
-        except Exception as ex:
-
-            print(
-                "ERROR:",
-                ex
-            )
-
-            await self.toast.show(
-                self.page_ref,
-                str(ex),
-                "error"
-            )
-
+   
     # =========================================================
     # CONFIRMAR ELIMINAR
     # =========================================================
+    async def confirmar_accion(
+    self,
+    item,
+    accion: AccionUsuario
+):
 
+        def cerrar():
+
+            dialog.open = False
+            self.page_ref.update()
+
+        async def ejecutar():
+
+            dialog.open = False
+            self.page_ref.update()
+
+            await accion.ejecutar(item)
+
+        def confirmar():
+
+            self.page_ref.run_task(
+                ejecutar
+            )
+
+        dialog = ft.AlertDialog(
+
+            modal=True,
+
+            title=ft.Text(
+                accion.titulo()
+            ),
+
+            content=ft.Text(
+                accion.mensaje(item)
+            ),
+
+            actions_alignment=(
+                ft.MainAxisAlignment.END
+            ),
+
+            actions=[
+
+                ft.OutlinedButton(
+                    "Cancelar",
+                    on_click=lambda e: cerrar()
+                ),
+
+                ft.FilledButton(
+                    accion.texto_confirmar(),
+                    bgcolor="#DC2626",
+                    color="white",
+                    on_click=lambda e: confirmar()
+                )
+            ]
+        )
+
+        if dialog not in self.page_ref.overlay:
+
+            self.page_ref.overlay.append(
+                dialog
+            )
+
+        self.page_ref.dialog = dialog
+
+        dialog.open = True
+
+        self.page_ref.update()
+        
     async def confirmar_eliminar(
         self,
         item
@@ -1063,10 +1135,94 @@ class UsuariosView(ft.Container):
 
         self.page_ref.update()
 
-    # =========================================================
-    # ELIMINAR
-    # =========================================================
-
+    async def cambiar_estado(
+            self,
+            item
+        ):
+    
+            token = self.page_ref.session.store.get(
+                "access_token"
+            )
+    
+            if not token:
+    
+                await self.toast.show(
+                    self.page_ref,
+                    "Sesión expirada",
+                    "error"
+                )
+    
+                return
+    
+            headers = {
+                "Authorization": f"Bearer {token}"
+            }
+    
+            usuario_id = item["id"]
+    
+            url = (
+                f"{settings.URL_BACKEND}"
+                f"/usuarios/{usuario_id}/estado"
+            )
+    
+            params = {
+                        "activo":  not item["activo"]
+                    }
+            try:
+    
+                async with httpx.AsyncClient() as client:
+    
+                    response = await client.patch(
+                        url,
+                        headers=headers,
+                        params=params
+                    )
+    
+                if response.status_code == 401:
+    
+                    await self.toast.show(
+                        self.page_ref,
+                        "Token inválido o expirado",
+                        "error"
+                    )
+    
+                    return
+    
+                if response.status_code not in (
+                    200,
+                    204
+                ):
+    
+                    await self.toast.show(
+                        self.page_ref,
+                        f"Error API: "
+                        f"{response.status_code}",
+                        "error"
+                    )
+    
+                    return
+    
+                await self.toast.show(
+                    self.page_ref,
+                    "Estado actualizado",
+                    "success"
+                )
+    
+                await self.buscar()
+    
+            except Exception as ex:
+    
+                print(
+                    "ERROR:",
+                    ex
+                )
+    
+                await self.toast.show(
+                    self.page_ref,
+                    str(ex),
+                    "error"
+                )
+      
     async def eliminar_usuario(
         self,
         item
@@ -1151,3 +1307,75 @@ class UsuariosView(ft.Container):
                 "error"
             )
 
+    async def resetear_password(self, item):
+
+        token = self.page_ref.session.store.get(
+            "access_token"
+        )
+
+        if not token:
+            await self.toast.show(
+                self.page_ref,
+                "Sesión expirada",
+                "error",
+            )
+            return
+
+        password_reset = settings.PASSWORD_RESET_DEFAULT
+
+        if not password_reset:
+            await self.toast.show(
+                self.page_ref,
+                "No está configurada la contraseña de reseteo",
+                "error",
+            )
+            return
+
+        payload = {
+            "password": password_reset
+        }
+
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        }
+
+        usuario_id = item["id"]
+
+        url = (
+            f"{settings.URL_BACKEND}"
+            f"/usuarios/{usuario_id}/password/reset"
+        )
+
+        async with httpx.AsyncClient(timeout=10) as client:
+
+            response = await client.patch(
+                url,
+                json=payload,
+                headers=headers,
+            )
+
+        if response.status_code == 200:
+
+            await self.toast.show(
+                self.page_ref,
+                "Contraseña restablecida correctamente",
+                "success",
+            )
+
+            return
+
+        try:
+            data = response.json()
+            detail = data.get(
+                "detail",
+                "No se pudo restablecer la contraseña"
+            )
+        except Exception:
+            detail = "No se pudo restablecer la contraseña"
+
+        await self.toast.show(
+            self.page_ref,
+            str(detail),
+            "error",
+        )

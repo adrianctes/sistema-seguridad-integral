@@ -27,13 +27,6 @@ class EditarLegajoView(ft.Container):
        
         self.selected_item = None
         self.toast = Toast()
-        # =====================================
-        # LOADER
-        # =====================================
-
-        self.loading = ft.ProgressRing(
-            visible=False
-        )
 
         COMMON_HEIGHT = 55
 
@@ -151,12 +144,37 @@ class EditarLegajoView(ft.Container):
             visible=False,
         )
 
-        # =====================================
-        # CONTENT
-        # =====================================
-        # =====================================
-# CONTENT
-# =====================================
+        self.loading_load = ft.ProgressRing(
+            width=40,
+            height=40,
+            stroke_width=4,
+        )
+
+        self.loading_guardar = ft.ProgressRing(
+                width=20,
+                height=20,
+                stroke_width=3,
+                visible=False,
+            )
+        self.loading_container = ft.Container(
+                content=ft.Column(
+                    [
+                        self.loading_load,
+                        ft.Text(
+                            "Cargando legajo...",
+                            size=16,
+                            weight=ft.FontWeight.BOLD,
+                        ),
+                    ],
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    spacing=15,
+                ),
+                alignment=ft.Alignment(0, 0),
+                expand=True,
+                bgcolor="#80000000",
+                visible=False,
+            )
 
         contenido = ft.Column(
 
@@ -316,7 +334,7 @@ class EditarLegajoView(ft.Container):
 
                                 controls=[
 
-                                    self.loading,
+                                    self.loading_guardar,
 
                                     ft.OutlinedButton(
 
@@ -359,22 +377,36 @@ class EditarLegajoView(ft.Container):
 
                 contenido,
 
+                self.loading_container,
+
                 self.toast
+
+               
             ]
         )   
-    async def load(self, legajo_id: None , modalidad_pago_id = None):
-        self.limpiar()
-        await CatalogosService.refresh()
-        await self.cargar_banco()
-        await self.cargar_categoria()
-        await self.cargar_modalidad_liquidacion()
-        await self.cargar_modalidad_pago()
-   
-        item =  await self.obtener_legajo_by_id(legajo_id)
-    
-        self.editar(item)
+    async def load(self, legajo_id: None):
+        try:
+            self.loading_container.visible = True
+            self.page_ref.update()
 
-        #self.update()
+            self.limpiar()
+            token = self.page_ref.session.store.get("access_token")
+
+            await CatalogosService.refresh(token)
+            await self.cargar_banco()
+            await self.cargar_categoria()
+            await self.cargar_modalidad_liquidacion()
+            await self.cargar_modalidad_pago()
+                
+    
+            item =  await self.obtener_legajo_by_id(legajo_id)
+        
+            self.editar(item)
+        finally:
+            self.loading_container.visible = False
+            self.page_ref.update()
+
+    
     def limpiar(self):
 
         self.fecha_alta.value= ""
@@ -454,7 +486,7 @@ class EditarLegajoView(ft.Container):
         if not await self.validar_formulario():
             return
 
-        self.loading.visible = True
+        self.loading_guardar.visible = True
 
         self.page_ref.update()
 
@@ -499,7 +531,7 @@ class EditarLegajoView(ft.Container):
 
         finally:
 
-            self.loading.visible = False
+            self.loading_guardar.visible = False
 
             self.page_ref.update()
    

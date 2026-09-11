@@ -272,29 +272,65 @@ class ModalNovedad(ft.AlertDialog):
             )
         )
 
-    async def abrir(self,  item=None):
+    async def abrir(self, item=None):
 
         self.limpiar()
-        await self.cargar_legajos()
-        
+        print(item)
+
         self.item_id = 0
 
-        self.lbl_titulo_accion.value = "Agregar Nueva Novedad"
-  
+        self.lbl_titulo_accion.value = (
+            "Agregar Nueva Novedad"
+        )
+
+        ok = await self.cargar_legajos()
+
+        if not ok:
+            self.lbl_mensaje.value = (
+                "No se pudieron cargar los legajos."
+            )
+
+            self.lbl_mensaje.color = ft.Colors.RED
+            self.lbl_mensaje.visible = True
+
         if item:
-            self.lbl_titulo_accion.value = "Editar Novedad"
-            self.cmb_legajo.value = str(item["legajo_id"])
-              
+
+            self.lbl_titulo_accion.value = (
+                "Editar Novedad"
+            )
+
             self.item_id = item["id"]
+
+            legajo_id = str(
+                item["legajo_id"]
+            )
+
+            self.cmb_legajo.value = legajo_id
+
+            # Ahora self.legajos ya existe
             self.obtener_condicion()
+
             await self.cargar_conceptos()
-            self.cmb_concepto.value = int(item["concepto_id"])
-                  
-            self.fecha_desde.set_value(item["fecha_desde"])
-            self.fecha_hasta.set_value(item["fecha_hasta"])
-            self.txt_cantidad.value = str(item["cantidad"])
-            self.txt_valor.value = formatear_moneda(item["valor"])
-           
+
+            self.cmb_concepto.value = str(
+                item["concepto_id"]
+            )
+
+            self.fecha_desde.set_value(
+                item["fecha_desde"]
+            )
+
+            self.fecha_hasta.set_value(
+                item["fecha_hasta"]
+            )
+
+            self.txt_cantidad.value = str(
+                item["cantidad"]
+            )
+
+            self.txt_valor.value = formatear_moneda(
+                item["valor"]
+            )
 
             self.chk_activo.value = item.get(
                 "activo",
@@ -312,72 +348,93 @@ class ModalNovedad(ft.AlertDialog):
 
     async def cargar_legajos(self):
 
-        async with httpx.AsyncClient() as client:
-
-            response = await client.get(
-
-                f"{settings.URL_BACKEND}/legajos/activos",
-
-                headers={
-                    "Authorization": f"Bearer {settings.TOKEN}"
-                }
+            token = self.page_ref.session.store.get(
+                "access_token"
             )
 
-        if response.status_code != 200:
-            return
+            if not token:
+                return False
 
-        self.legajos = {}
+            async with httpx.AsyncClient() as client:
 
-        self.cmb_legajo.options = []
-
-        for x in response.json():
-
-            self.legajos[str(x["id"])] = x
-
-            self.cmb_legajo.options.append(
-                ft.dropdown.Option(
-                    key=str(x["id"]),
-                    text=f'{x["apellido"]}  {x["nombre"] }'
+                response = await client.get(
+                    f"{settings.URL_BACKEND}/legajos/activos",
+                    headers={
+                        "Authorization": f"Bearer {token}"
+                    }
                 )
-            )
 
+            if response.status_code != 200:
+                return False
+
+            self.legajos = {}
+
+            self.cmb_legajo.options = []
+
+            for x in response.json():
+
+                legajo_id = str(x["id"])
+
+                self.legajos[legajo_id] = x
+
+                self.cmb_legajo.options.append(
+                    ft.DropdownOption(
+                        key=legajo_id,
+                        text=f'{x["apellido"]} {x["nombre"]}'
+                    )
+                )
+
+            return True
+
+    
     async def cargar_conceptos(self):
 
         if not self.cmb_legajo.value:
             return
 
-        legajo = self.legajos[self.cmb_legajo.value]
+        legajo = self.legajos.get(
+            str(self.cmb_legajo.value)
+        )
+
+        if not legajo:
+            return
 
         self.legajo_id = legajo["id"]
 
-        self.modalidad_pago_id = legajo["modalidad_pago_id"]
+        self.modalidad_pago_id = legajo[
+            "modalidad_pago_id"
+        ]
 
+        token = self.page_ref.session.store.get(
+            "access_token"
+        )
+
+        if not token:
+            return
 
         async with httpx.AsyncClient() as client:
 
             response = await client.get(
-
-                f"{settings.URL_BACKEND}/conceptos/modalidad-pago/{self.modalidad_pago_id}/novedades",
+                f"{settings.URL_BACKEND}"
+                f"/conceptos/modalidad-pago/"
+                f"{self.modalidad_pago_id}/novedades",
 
                 headers={
-                    "Authorization": f"Bearer {settings.TOKEN}"
+                    "Authorization": f"Bearer {token}"
                 }
             )
 
         if response.status_code != 200:
             return
 
-        
         self.cmb_concepto.options = [
-
-            ft.dropdown.Option(
-                str(x["id"]),
-                x["nombre"]
+            ft.DropdownOption(
+                key=str(x["id"]),
+                text=x["nombre"]
             )
-
             for x in response.json()
         ]
-
+        
     def limpiar(self):
 
         self.item_id = 0
@@ -591,26 +648,46 @@ class ModalNovedad(ft.AlertDialog):
                 e.control.update()
    
     def obtener_condicion(self):
-        if not self.cmb_legajo.value:
-            return False
 
-        legajo = self.legajos[self.cmb_legajo.value]
+            if not self.cmb_legajo.value:
+                self.lbl_condicion.value = ""
+                return False
 
-        self.legajo_id = legajo["id"]
+            legajo = self.legajos.get(
+                str(self.cmb_legajo.value)
+            )
 
-        self.modalidad_pago_id = legajo["modalidad_pago_id"]
-     
+            if not legajo:
+                self.lbl_condicion.value = ""
+                return False
 
-        modalidad = next(
-            (m for m in MODALIDAD_PAGO if m["id"] == self.modalidad_pago_id), None)
+            self.legajo_id = legajo["id"]
 
-        self.lbl_condicion.value = modalidad["nombre"] if modalidad else ""
+            self.modalidad_pago_id = legajo[
+                "modalidad_pago_id"
+            ]
 
-        return True
+            modalidad = next(
+                (
+                    m
+                    for m in MODALIDAD_PAGO
+                    if m["id"] == self.modalidad_pago_id
+                ),
+                None
+            )
 
-    async def cambio_legajo(self):
+            self.lbl_condicion.value = (
+                modalidad["nombre"]
+                if modalidad
+                else ""
+            )
 
-       if self.obtener_condicion():
+            return True
+
+    async def cambio_legajo(self, e=None):
+
+        if self.obtener_condicion():
+
             self.cmb_concepto.value = None
 
             await self.cargar_conceptos()

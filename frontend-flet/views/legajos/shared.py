@@ -12,9 +12,7 @@ class CatalogosService:
     modalidades_liquidacion = []
 
     @classmethod
-    async def cargar_bancos(cls):
-
-        token = self.page.session.store.get("access_token")
+    async def cargar_bancos(cls, token:str):
 
         async with httpx.AsyncClient() as client:
 
@@ -30,9 +28,8 @@ class CatalogosService:
             cls.bancos = response.json()
 
     @classmethod
-    async def cargar_categorias(cls):
+    async def cargar_categorias(cls, token):
 
-        token = self.page.session.store.get("access_token")
 
         async with httpx.AsyncClient() as client:
 
@@ -48,9 +45,7 @@ class CatalogosService:
             cls.categorias = response.json()
 
     @classmethod
-    async def cargar_modalidades_liquidacion(cls):
-
-        token = self.page.session.store.get("access_token")
+    async def cargar_modalidades_liquidacion(cls, token:str):
 
         async with httpx.AsyncClient() as client:
 
@@ -66,10 +61,10 @@ class CatalogosService:
             cls.modalidades_liquidacion = response.json()
 
     @classmethod
-    async def refresh(cls):
+    async def refresh(cls, token):
 
         await asyncio.gather(
-            cls.cargar_bancos(),
-            cls.cargar_categorias(),
-            cls.cargar_modalidades_liquidacion()
+            cls.cargar_bancos(token),
+            cls.cargar_categorias(token),
+            cls.cargar_modalidades_liquidacion(token)
         )

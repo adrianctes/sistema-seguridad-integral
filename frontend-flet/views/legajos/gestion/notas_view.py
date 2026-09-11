@@ -22,7 +22,7 @@ class NotasView(ft.Container):
             ]
         )
 
-    async def load(self):
+    async def load(self,  legajo_id: None):
 
         self.lbl.value = "Pagina en Contruccion"
 
