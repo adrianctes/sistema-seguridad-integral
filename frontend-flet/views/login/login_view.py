@@ -114,12 +114,10 @@ class LoginView:
 
     async def login(self, e):
 
-        self.btn_ingresar.disabled = True
-
         usuario = self.txt_usuario.value
         password = self.txt_password.value
 
-        usuario = "amiño"
+        usuario = "sbarboza"
         password = "newReset123"
 
         if not usuario or not password:
@@ -140,6 +138,7 @@ class LoginView:
 
         self.page.update()
         try:
+            self.btn_ingresar.disabled = True
             resultado = await self.auth(
                     usuario,
                     password

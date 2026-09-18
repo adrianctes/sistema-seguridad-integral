@@ -3,6 +3,7 @@ import httpx
 
 from components.alerts import Toast
 from  core.config import settings
+from utils.permisos import tiene_permiso
 
 class LegajosView(ft.Container):
 
@@ -20,6 +21,9 @@ class LegajosView(ft.Container):
 
         self.total_items = 0
 
+        self.permiso_crear  = False
+
+        self.permiso_eliminar = False
 
         self.legajos = []
 
@@ -170,26 +174,24 @@ class LegajosView(ft.Container):
                                 )
                             ]
                         ),
-
+                
                         ft.FilledButton(
 
                             "Nuevo",
-                            margin=ft.Margin(0, 0, 10, 0),  # izquierda, arriba, derecha, abajo
+                            margin=ft.Margin(0, 0, 10, 0),  
                             icon=ft.Icons.ADD,
                             width = 110,
                             height=36,
 
-                            #on_click=self.modal_legajo.abrir_nuevo,
+                            disabled=not self.permiso_crear,
                             on_click=lambda e: self.page_ref.layout.change_view("crear_legajo"),
-                           
-                          
-
                             style=ft.ButtonStyle(
                                 shape=ft.RoundedRectangleBorder(
                                     radius=0
                                 ),
-                                bgcolor="#030B16",
-                                #padding=12
+                                #bgcolor="#030B16"
+                                bgcolor="#030B16" if self.permiso_crear else "#9CA3AF"
+                           
                             )
                         )
                     ]
@@ -211,8 +213,6 @@ class LegajosView(ft.Container):
                     ),
 
                     content=ft.Row(
-
-                        #spacing=10,
 
                         controls=[
 
@@ -343,7 +343,10 @@ class LegajosView(ft.Container):
        #page.run_task(self.listar_legajos)
 
     async def load(self):
-       await self.listar_legajos()
+        await self.listar_legajos()
+        self.permiso_crear = tiene_permiso(self.page_ref, "LEGAJOS_CREAR")
+        self.permiso_eliminar= tiene_permiso(self.page_ref, "LEGAJOS_ELIMINAR")
+
 
     def load_data(self):
 
@@ -354,6 +357,8 @@ class LegajosView(ft.Container):
         ).lower()
 
         activos = self.chk_activos.value
+
+
 
         data = [
 
@@ -373,7 +378,7 @@ class LegajosView(ft.Container):
 
                 x["activo"]
                 if activos
-                else True
+                else False
             )
         ]
 
@@ -493,9 +498,12 @@ class LegajosView(ft.Container):
 
                                         icon_size=18,
 
-                                        icon_color="red",
+                                        #icon_color="red",
+                                        icon_color="red" if self.permiso_eliminar else "gray",
 
                                         tooltip="Eliminar",
+
+                                        disabled=not self.permiso_eliminar,
 
                                         on_click=lambda e,
                                         x=item: self.page_ref.run_task(
@@ -669,12 +677,12 @@ class LegajosView(ft.Container):
             "gestion_legajo"
             )'''
     async def abrir_detalle(self, item):
-        #gestion = self.page_ref.layout.views["gestion_legajo"]
-        gestion = self.page_ref.layout.views.get('gestion_legajo')
+        gestion = self.page_ref.layout.views["gestion_legajo"]
+        #gestion = self.page_ref.layout.views.get('gestion_legajo')
         gestion.set_legajo(item)
         self.page_ref.layout.change_view("gestion_legajo" )
 
-        await gestion.load()
+        #await gestion.load()
     
     async def eliminar_item(self, item):
 

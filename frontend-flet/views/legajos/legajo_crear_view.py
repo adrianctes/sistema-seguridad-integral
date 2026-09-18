@@ -5,7 +5,7 @@ import httpx
 from core.config import settings
 from views.legajos.shared import CatalogosService
 from core.constants import MODALIDAD_PAGO
-
+from utils.permisos import tiene_permiso
 
 class CrearLegajoView(ft.Container):
 
@@ -17,6 +17,7 @@ class CrearLegajoView(ft.Container):
 
         self.legajo_id = 0
 
+   
         self.expand = True
 
         self.bgcolor = "#F1F5F9"
@@ -297,13 +298,11 @@ class CrearLegajoView(ft.Container):
                                     ),
 
                                     ft.FilledButton(
-
                                         "Guardar",
-
                                         on_click=self.guardar,
 
                                         style=ft.ButtonStyle(
-                                            bgcolor="#030B16",
+                                            bgcolor="#030B16" ,                          
                                             color="white"
                                         )
                                     ),
@@ -317,7 +316,7 @@ class CrearLegajoView(ft.Container):
 
     async def load(self):
 
-        self.limpiar()
+        self.limpiar()    
 
         token = self.page_ref.session.store.get("access_token")
 

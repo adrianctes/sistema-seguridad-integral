@@ -259,7 +259,6 @@ class CambiarPasswordView(ft.Container):
             else f"Usuario ID: {usuario_id}"
         )
 
-        self.update()
 
     # ==============================================================
     # LIMPIAR

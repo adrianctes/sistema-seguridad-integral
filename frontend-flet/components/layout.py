@@ -14,6 +14,7 @@ from views.Gestion_haberes.liquidacion.liquidacion__haberes.crear_edicion_liquid
 from views.usuarios.usuarios_view import UsuariosView
 from views.usuarios.usuario_crear_view import CrearUsuarioView
 from views.usuarios.usuario_cambiar_password import CambiarPasswordView
+from views.permiso_usuario.permiso_usuario_view import PermisoUsuarioView
 
 class Layout:
     def __init__(self, page, on_logout):
@@ -44,6 +45,7 @@ class Layout:
             "gestionar_usuarios" : UsuariosView(page),
             "crear_usuario": CrearUsuarioView(page),
             "cambiar_contrasena":CambiarPasswordView(page,   self.on_logout),
+            "permiso_usuario": PermisoUsuarioView(page),
             "datos_fijos_liquidacion": DatosFijosView(page, self),
             "crear_editar_datos_fijos": DatosFijosAltaEdicionView(page, self),
             "liquidacion_haberes" :LiquidacionDeHaberesView(page),
@@ -65,6 +67,7 @@ class Layout:
         )
 
     def build(self):
+        
 
         return ft.Row(
 
@@ -79,88 +82,9 @@ class Layout:
             ]
         )
 
-    '''def change_view(self, view_name):
-
-        if view_name in self.views:
-
-            vista = self.views[view_name]
-
-            self.content.content = vista
-
-            if view_name == "dashboard":
-                if hasattr(vista, "load"):
-                    self.page.run_task(
-                        vista.load
-                )    
-               
-
-            elif view_name == "legajos":
-
-                if hasattr(vista, "listar_legajos"):
-
-                    self.page.run_task(
-                        vista.listar_legajos
-                    )
-
-            elif view_name in [
-                "crear_legajo",
-                "gestion_legajo"
-            ]:
-
-                if hasattr(vista, "load"):
-
-                    self.page.run_task(
-                        vista.load
-                    )
-
-        else:
-
-            self.content.content = ft.Container(
-
-                content=ft.Text(
-                    f"Vista '{view_name}' en construcción",
-                    size=26
-                )
-            )
-
-        self.page.update()'''
-    """  def change_view(
-        self,
-        view_name,
-        *args
-    ):
-
-        if view_name in self.views:
-
-            vista = self.views[view_name]
-
-            self.content.content = vista
-
-            if   hasattr(vista, "load"):
-
-                self.page.run_task(
-                    vista.load,
-                    *args
-                )
-
-        else:
-
-            self.content.content = ft.Container(
-
-                content=ft.Text(
-
-                    f"Vista '{view_name}' en construcción",
-
-                    size=26
-                )
-            )
-
-        self.page.update()
-
-        return vista
- """
     def change_view(self, view_name, *args):
 
+     
         if view_name not in self.views:
             self.content.content = ft.Container(
                 content=ft.Text(

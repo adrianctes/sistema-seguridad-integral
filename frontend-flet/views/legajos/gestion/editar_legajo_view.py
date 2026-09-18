@@ -7,6 +7,7 @@ from views.legajos.shared import CatalogosService
 from core.constants import MODALIDAD_PAGO
 from components.alerts import Toast
 from core.config import settings
+from utils.permisos import tiene_permiso
 
 
 class EditarLegajoView(ft.Container):
@@ -27,6 +28,8 @@ class EditarLegajoView(ft.Container):
        
         self.selected_item = None
         self.toast = Toast()
+
+        self.permiso_editar = False
 
         COMMON_HEIGHT = 55
 
@@ -349,11 +352,12 @@ class EditarLegajoView(ft.Container):
                                     ft.FilledButton(
 
                                         "Guardar",
-
+                                        disabled=not self.permiso_editar,
                                         on_click=self.guardar,
 
+
                                         style=ft.ButtonStyle(
-                                            bgcolor="#030B16",
+                                            bgcolor="#030B16" if self.permiso_editar else "#9CA3AF",
                                             color="white"
                                         )
                                     ),
@@ -385,6 +389,8 @@ class EditarLegajoView(ft.Container):
             ]
         )   
     async def load(self, legajo_id: None):
+        self.permiso_editar= tiene_permiso(self.page_ref, "LEGAJOS_EDITAR")
+
         try:
             self.loading_container.visible = True
             self.page_ref.update()
