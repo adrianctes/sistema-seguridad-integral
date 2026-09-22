@@ -502,7 +502,7 @@ class DatosFijosAltaEdicionView(ft.Container):
     
     async def cargar(self, id):
 
-        token = self.page.session.store.get("access_token")
+        token = self.page_ref.session.store.get("access_token")
 
         headers = {
 

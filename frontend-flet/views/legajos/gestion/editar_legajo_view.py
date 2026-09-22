@@ -147,6 +147,20 @@ class EditarLegajoView(ft.Container):
             visible=False,
         )
 
+        self.boton_guardar = ft.FilledButton(
+            "Guardar",
+            width=120,
+            height=40,
+            on_click=self.guardar,
+            style=ft.ButtonStyle(
+                shape=ft.RoundedRectangleBorder(
+                    radius=20
+                ),
+                bgcolor="#030B16",
+                color="#FFFFFF",
+            )
+        )
+
         self.loading_load = ft.ProgressRing(
             width=40,
             height=40,
@@ -349,18 +363,7 @@ class EditarLegajoView(ft.Container):
                                             )
                                     ),
 
-                                    ft.FilledButton(
-
-                                        "Guardar",
-                                        disabled=not self.permiso_editar,
-                                        on_click=self.guardar,
-
-
-                                        style=ft.ButtonStyle(
-                                            bgcolor="#030B16" if self.permiso_editar else "#9CA3AF",
-                                            color="white"
-                                        )
-                                    ),
+                                     self.boton_guardar
                                 ],
                             ),
                         ],
@@ -389,8 +392,9 @@ class EditarLegajoView(ft.Container):
             ]
         )   
     async def load(self, legajo_id: None):
-        self.permiso_editar= tiene_permiso(self.page_ref, "LEGAJOS_EDITAR")
-
+        self.permiso_editar = tiene_permiso(self.page_ref, "LEGAJOS_EDITAR")
+        self.actualizar_boton_guardar()
+    
         try:
             self.loading_container.visible = True
             self.page_ref.update()
@@ -523,9 +527,9 @@ class EditarLegajoView(ft.Container):
                     "success"
                 )
 
-                self.lbl_mensaje.color = "#15803D"
+               # self.lbl_mensaje.color = "#15803D"
 
-                self.lbl_mensaje.visible = True
+               # self.lbl_mensaje.visible = True
 
                 self.page_ref.update()
 
@@ -663,6 +667,7 @@ class EditarLegajoView(ft.Container):
         self.ddl_modalidad_pago.value = str(item["modalidad_pago_id"])
         self.txt_valor_modalidad_pago.value = str(item["valor_modalidad_pago"])
         self.txt_telefono.value = item["telefono"]
+        self.ddl_banco.value = item["banco_id"]
 
         self.chk_sac.value = item["sac"]
 
@@ -710,8 +715,21 @@ class EditarLegajoView(ft.Container):
                     "activo": data.get("activo", True),
                     "sac":  data.get("sac", False),
                     "modalidad_pago_id" : data.get("modalidad_pago_id"),
-                    "valor_modalidad_pago" : data.get("valor_modalidad_pago")
+                    "valor_modalidad_pago" : data.get("valor_modalidad_pago"),
+                    "banco_id" : data.get("banco_id")
                 }
         
         return legajo
- 
+
+    def actualizar_boton_guardar(self):
+    
+            self.boton_guardar.disabled = not self.permiso_editar
+    
+            self.boton_guardar.style = ft.ButtonStyle(
+                shape=ft.RoundedRectangleBorder(
+                    radius=20
+                ),
+                bgcolor="#030B16" if self.permiso_editar else "#9CA3AF"
+            )
+    
+            self.boton_guardar.update()

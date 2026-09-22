@@ -117,8 +117,8 @@ class LoginView:
         usuario = self.txt_usuario.value
         password = self.txt_password.value
 
-        usuario = "sbarboza"
-        password = "newReset123"
+        #usuario = "amiño"    #""sbarboza"
+        #password = "newReset123"
 
         if not usuario or not password:
             await self.toast.show(

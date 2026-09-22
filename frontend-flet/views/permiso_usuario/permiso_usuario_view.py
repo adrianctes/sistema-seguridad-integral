@@ -576,7 +576,7 @@ class PermisoUsuarioView(ft.Container):
 
         acciones_principales = [
 
-            "VER",
+            "ACCEDER",
             "CREAR",
             "EDITAR",
             "ELIMINAR"
@@ -733,10 +733,11 @@ class PermisoUsuarioView(ft.Container):
 
         for accion in [
 
-            "VER",
+            "ACCEDER",
             "CREAR",
             "EDITAR",
             "ELIMINAR"
+  
 
         ]:
 
@@ -828,10 +829,11 @@ class PermisoUsuarioView(ft.Container):
 
         for accion in [
 
-            "VER",
+            "ACCEDER",
             "CREAR",
             "EDITAR",
             "ELIMINAR"
+   
 
         ]:
 

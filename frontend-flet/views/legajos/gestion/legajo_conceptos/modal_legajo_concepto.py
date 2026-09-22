@@ -220,12 +220,15 @@ class ModalLegajoConcepto(ft.AlertDialog):
         self.page_ref.update()
 
     async def cargar_conceptos(self):
- 
+
+        token = self.page_ref.session.store.get("access_token")
+
         async with httpx.AsyncClient() as client:
+
             r = await client.get(
                 f"{settings.URL_BACKEND}/conceptos/modalidad-pago/{self.modalidad_pago_id}",
                 headers={
-                    "Authorization": f"Bearer {settings.TOKEN}"
+                    "Authorization": f"Bearer {token}"
                 }
             )
 
@@ -358,7 +361,7 @@ class ModalLegajoConcepto(ft.AlertDialog):
         e.control.update()
 
     async def obtener_legajo_by_id(self,legajo_id:int):
-        token = self.page.session.store.get("access_token")
+        token = self.page_ref.session.store.get("access_token")
         url = f"{settings.URL_BACKEND}/legajos/id/{legajo_id}"
         async with httpx.AsyncClient() as client:
             response = await client.get(
@@ -503,7 +506,7 @@ class ModalLegajoConcepto(ft.AlertDialog):
         return True
     
     async def api_crear(self, data):
-        token = self.page.session.store.get("access_token")
+        token = self.page_ref.session.store.get("access_token")
 
         url = (
             f"{settings.URL_BACKEND}/legajos/{self.legajo_id}/conceptos"
@@ -560,7 +563,7 @@ class ModalLegajoConcepto(ft.AlertDialog):
     
     async def api_editar(self, data):
 
-        token = self.page.session.store.get("access_token")
+        token = self.page_ref.session.store.get("access_token")
 
         url = (
              f"{settings.URL_BACKEND}/legajos/{self.legajo_id}/conceptos/{self.item_id}"

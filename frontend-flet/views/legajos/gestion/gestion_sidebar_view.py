@@ -1,5 +1,5 @@
-import flet as ft
-
+""" import flet as ft
+from utils.permisos import tiene_permiso
 
 class Sidebar(ft.Container):
 
@@ -96,7 +96,15 @@ class Sidebar(ft.Container):
     # ITEM
     # =========================
 
-    def item(self, text, route=None):
+    def item(self, text, route=None,  permiso_ACCEDER=None):
+
+        if permiso_ACCEDER is not None:
+        
+            if not tiene_permiso(
+                self.page_ref,
+                permiso_ACCEDER
+            ):
+                        return None 
 
         indicator = ft.Container(
             width=4,
@@ -259,7 +267,8 @@ class Sidebar(ft.Container):
 
                 self.item(
                     "Historia laboral",
-                    "historia"
+                    "historia",
+                    "LEGAJOS_HISTORIAL_LABORAL_ACCEDER"
                 ),
 
                 self.item(
@@ -268,7 +277,8 @@ class Sidebar(ft.Container):
                 ),
                 self.item(
                     "Conceptos aplicados",
-                    "legajo_conceptos"
+                    "legajo_conceptos",
+                    "LEGAJOS_CONCEPTOS_APLICADOS_ACCEDER"
                 )
             ]
         )
@@ -315,4 +325,460 @@ class Sidebar(ft.Container):
 
         if self.page_ref:
             self.page_ref.update()
-        
+         """
+import flet as ft
+
+from utils.permisos import tiene_permiso
+
+
+class Sidebar(ft.Container):
+
+    def __init__(self, page, change_page):
+
+        super().__init__()
+
+        self.page_ref = page
+
+        self.change_page = change_page
+
+        self.ayn = ""
+
+        # =====================================================
+        # COLORS
+        # =====================================================
+
+        self.bg = "#FFFFFF"
+
+        self.text = "#111827"
+
+        self.hover = "#E5E7EB"
+
+        # selected
+        self.active_bg = "#769AE4"
+
+        self.active_text = "RED"
+
+        # selected item
+        self.active_item = None
+
+        # =====================================================
+        # TEXT AYN
+        # =====================================================
+
+        self.ayn_text = ft.Text(
+            "",
+            size=13,
+            color=ft.Colors.GREY_700,
+        )
+
+        # =====================================================
+        # BUILD
+        # =====================================================
+
+        self.build()
+
+    # =========================================================
+    # SELECT ITEM
+    # =========================================================
+
+    def select_item(self, e, route):
+
+        # -----------------------------------------------------
+        # limpiar anterior
+        # -----------------------------------------------------
+
+        if self.active_item:
+
+            self.active_item.indicator.bgcolor = "transparent"
+
+            self.active_item.label.color = self.text
+
+            self.active_item.label.weight = ft.FontWeight.W_500
+
+            self.active_item.bgcolor = self.bg
+
+            self.active_item.update()
+
+        # -----------------------------------------------------
+        # nuevo activo
+        # -----------------------------------------------------
+
+        e.control.indicator.bgcolor = "red"
+
+        e.control.label.color = "red"
+
+        e.control.label.weight = ft.FontWeight.BOLD
+
+        e.control.bgcolor = "#FFF1F2"
+
+        self.active_item = e.control
+
+        e.control.update()
+
+        # -----------------------------------------------------
+        # cambiar vista
+        # -----------------------------------------------------
+
+        self.change_page(route)
+
+    # =========================================================
+    # HOVER
+    # =========================================================
+
+    def handle_hover(self, e):
+
+        # si es el activo no hacer hover
+        if e.control == self.active_item:
+            return
+
+        if e.data == "true":
+
+            e.control.bgcolor = self.hover
+
+        else:
+
+            e.control.bgcolor = self.bg
+
+        e.control.update()
+
+    # =========================================================
+    # ITEM
+    # =========================================================
+
+    def item(
+        self,
+        text,
+        route=None,
+        permiso_ACCEDER=None
+    ):
+
+        # -----------------------------------------------------
+        # CONTROL DE PERMISO
+        #
+        # None = no requiere permiso
+        # Código = requiere permiso ACCEDER
+        # -----------------------------------------------------
+
+        if permiso_ACCEDER is not None:
+
+            if not tiene_permiso(
+                self.page_ref,
+                permiso_ACCEDER
+            ):
+
+                return None
+
+        # -----------------------------------------------------
+        # INDICADOR
+        # -----------------------------------------------------
+
+        indicator = ft.Container(
+            width=4,
+            height=22,
+            bgcolor="transparent",
+            border_radius=10
+        )
+
+        # -----------------------------------------------------
+        # LABEL
+        # -----------------------------------------------------
+
+        label = ft.Text(
+            text,
+            size=13,
+            color=self.text,
+            weight=ft.FontWeight.W_500
+        )
+
+        # -----------------------------------------------------
+        # ROW
+        # -----------------------------------------------------
+
+        row = ft.Row(
+            controls=[
+                label,
+                indicator
+            ],
+            alignment="spaceBetween",
+            vertical_alignment="center"
+        )
+
+        # -----------------------------------------------------
+        # CONTAINER
+        # -----------------------------------------------------
+
+        container = ft.Container(
+
+            height=38,
+
+            border_radius=8,
+
+            padding=ft.Padding.only(
+                left=12,
+                right=8
+            ),
+
+            alignment=ft.Alignment(-1, 0),
+
+            bgcolor=self.bg,
+
+            ink=True,
+
+            animate=ft.Animation(
+                150,
+                ft.AnimationCurve.EASE_IN_OUT
+            ),
+
+            on_hover=lambda e: self.handle_hover(e),
+
+            content=row
+        )
+
+        # -----------------------------------------------------
+        # REFERENCIAS
+        # -----------------------------------------------------
+
+        container.label = label
+
+        container.indicator = indicator
+
+        # -----------------------------------------------------
+        # CLICK
+        # -----------------------------------------------------
+
+        container.on_click = lambda e: self.select_item(
+            e,
+            route
+        )
+
+        return container
+
+    # =========================================================
+    # DIVIDER
+    # =========================================================
+
+    def divider(self):
+
+        return ft.Container(
+
+            height=1,
+
+            border_radius=10,
+
+            bgcolor="#E5E7EB",
+
+            margin=ft.Margin(
+                top=10,
+                bottom=10,
+                left=0,
+                right=0
+            )
+        )
+
+    # =========================================================
+    # BUILD
+    # =========================================================
+
+    def build(self):
+
+        # =====================================================
+        # ITEM EDITAR
+        #
+        # No tiene permiso porque es el item principal
+        # de Gestión Legajo.
+        # =====================================================
+
+        self.editar_item = self.item(
+            "Editar",
+            "editar"
+        )
+
+        # =====================================================
+        # CREAR LISTA DE ITEMS
+        # =====================================================
+
+        items = [
+
+            self.editar_item,
+
+            # -------------------------------------------------
+            # SIN PERMISO
+            # Siempre visibles
+            # -------------------------------------------------
+
+            self.item(
+                "Familiares",
+                "familiares"
+            ),
+
+            self.item(
+                "Licencias",
+                "licencias"
+            ),
+
+            self.item(
+                "Sanciones",
+                "sanciones"
+            ),
+
+            self.item(
+                "Notas",
+                "notas"
+            ),
+
+            # -------------------------------------------------
+            # CON PERMISO
+            # -------------------------------------------------
+
+            self.item(
+                "Historia laboral",
+                "historia",
+                "LEGAJOS_HISTORIAL_LABORAL_ACCEDER"
+            ),
+
+            self.item(
+                "Conceptos aplicados",
+                "legajo_conceptos",
+                "LEGAJOS_CONCEPTOS_APLICADOS_ACCEDER"
+            )
+        ]
+
+        # =====================================================
+        # ELIMINAR ITEMS SIN PERMISO
+        #
+        # Los que devolvieron None no se agregan al Column.
+        # =====================================================
+
+        items = [
+            item
+            for item in items
+            if item is not None
+        ]
+
+        # =====================================================
+        # WIDTH
+        # =====================================================
+
+        self.width = 170
+
+        # =====================================================
+        # BACKGROUND
+        # =====================================================
+
+        self.bgcolor = self.bg
+
+        # =====================================================
+        # PADDING
+        # =====================================================
+
+        self.padding = ft.Padding.only(
+            top=15,
+            left=5,
+            right=10,
+            bottom=10
+        )
+
+        # =====================================================
+        # CONTENT
+        # =====================================================
+
+        self.content = ft.Column(
+
+            spacing=5,
+
+            controls=[
+
+                # =================================================
+                # HEADER
+                # =================================================
+
+                ft.Container(
+
+                    padding=10,
+
+                    content=ft.Column(
+
+                        spacing=2,
+
+                        controls=[
+
+                            ft.Text(
+                                "Gestión Legajo",
+                                size=18,
+                                weight=ft.FontWeight.BOLD,
+                                color="BLACK",
+                            ),
+
+                            self.ayn_text
+
+                        ]
+                    )
+                ),
+
+                # =================================================
+                # DIVIDER
+                # =================================================
+
+                self.divider(),
+
+                # =================================================
+                # ITEMS
+                # =================================================
+
+                *items
+            ]
+        )
+
+    # =========================================================
+    # DEFAULT ITEM
+    # =========================================================
+
+    def set_default_item(self):
+
+        # -----------------------------------------------------
+        # limpiar activo anterior
+        # -----------------------------------------------------
+
+        if self.active_item:
+
+            self.active_item.indicator.bgcolor = "transparent"
+
+            self.active_item.label.color = self.text
+
+            self.active_item.label.weight = ft.FontWeight.W_500
+
+            self.active_item.bgcolor = self.bg
+
+        # -----------------------------------------------------
+        # activar Editar
+        # -----------------------------------------------------
+
+        self.active_item = self.editar_item
+
+        self.editar_item.indicator.bgcolor = "red"
+
+        self.editar_item.label.color = "red"
+
+        self.editar_item.label.weight = ft.FontWeight.BOLD
+
+        self.editar_item.bgcolor = "#FFF1F2"
+
+        # -----------------------------------------------------
+        # actualizar
+        # -----------------------------------------------------
+
+        self.update()
+
+    # =========================================================
+    # SET AYN
+    # =========================================================
+
+    def set_ayn(self, ayn):
+
+        self.ayn = ayn
+
+        self.ayn_text.value = ayn
+
+        if self.page_ref:
+
+            self.page_ref.update()

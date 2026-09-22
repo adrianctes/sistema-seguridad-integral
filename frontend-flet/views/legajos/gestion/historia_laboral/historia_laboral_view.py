@@ -5,7 +5,7 @@ from views.legajos.gestion.historia_laboral.historia_laboral_modal import Histor
 from components.alerts import Toast
 from core.config import settings
 from datetime import datetime
-
+from utils.permisos import tiene_permiso
 
 class HistoriaLaboralView(ft.Container):
 
@@ -28,9 +28,30 @@ class HistoriaLaboralView(ft.Container):
 
         self.legajo_id = None
 
-      
+        self.permiso_crear = False
 
         self.movimientos = []
+
+        self.boton_nuevo = ft.FilledButton(
+                    "Nuevo",
+                    margin=ft.Margin(0, 0, 10, 0),
+                    icon=ft.Icons.ADD,
+                    width=110,
+                    height=36,
+                    disabled=True,
+                    on_click=lambda e:
+                            self.page_ref.run_task(
+                            self.modal_historia_laboral.abrir,
+                            self.legajo_id
+                    ),
+                    style=ft.ButtonStyle(
+                        shape=ft.RoundedRectangleBorder(
+                            radius=0
+                        ),
+                        bgcolor="#030B16",
+                         padding=12
+                    )
+                )
 
         # =====================================
         # TABLA
@@ -148,29 +169,7 @@ class HistoriaLaboralView(ft.Container):
                             ]
                         ),
 
-                        ft.FilledButton(
-
-                            "Nuevo",
-
-                            icon=ft.Icons.ADD,
-
-                            height=36,
-
-                            on_click=lambda e:
-                                self.page_ref.run_task(
-                                    self.modal_historia_laboral.abrir,
-                                    self.legajo_id
-                                ),
-                           
-
-                            style=ft.ButtonStyle(
-                                shape=ft.RoundedRectangleBorder(
-                                    radius=0
-                                ),
-                                bgcolor="#030B16",
-                                padding=12
-                            )
-                        )
+                        self.boton_nuevo
                     ]
                 ),
 
@@ -248,9 +247,13 @@ class HistoriaLaboralView(ft.Container):
         )
 
     async def load(self, legajo_id= None ):
-  
+
+        self.permiso_crear =  tiene_permiso(self.page_ref, "LEGAJOS_HISTORIAL_LABORAL_CREAR")
+        self.actualizar_boton_nuevo()
+
         if legajo_id:
             self.legajo_id = legajo_id
+
 
         self.table.rows.clear()
         self.page.update()
@@ -400,3 +403,16 @@ class HistoriaLaboralView(ft.Container):
         await self.listar_historial()
 
         self.page_ref.update()
+
+    def actualizar_boton_nuevo(self):
+
+            self.boton_nuevo.disabled = not self.permiso_crear
+
+            self.boton_nuevo.style = ft.ButtonStyle(
+                shape=ft.RoundedRectangleBorder(
+                    radius=0
+                ),
+                bgcolor="#030B16" if self.permiso_crear else "#9CA3AF"
+            )
+
+            self.boton_nuevo.update()

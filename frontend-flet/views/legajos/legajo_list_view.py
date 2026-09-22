@@ -33,6 +33,22 @@ class LegajosView(ft.Container):
 
         self.padding = 20
 
+        self.boton_nuevo = ft.FilledButton(
+            "Nuevo",
+            margin=ft.Margin(0, 0, 10, 0),
+            icon=ft.Icons.ADD,
+            width=110,
+            height=36,
+            disabled=True,
+            on_click=lambda e: self.page_ref.layout.change_view("crear_legajo"),
+            style=ft.ButtonStyle(
+                shape=ft.RoundedRectangleBorder(
+                    radius=0
+                ),
+                bgcolor="#030B16"
+            )
+        )
+
 
         self.txt_busqueda = ft.TextField(
 
@@ -175,25 +191,7 @@ class LegajosView(ft.Container):
                             ]
                         ),
                 
-                        ft.FilledButton(
-
-                            "Nuevo",
-                            margin=ft.Margin(0, 0, 10, 0),  
-                            icon=ft.Icons.ADD,
-                            width = 110,
-                            height=36,
-
-                            disabled=not self.permiso_crear,
-                            on_click=lambda e: self.page_ref.layout.change_view("crear_legajo"),
-                            style=ft.ButtonStyle(
-                                shape=ft.RoundedRectangleBorder(
-                                    radius=0
-                                ),
-                                #bgcolor="#030B16"
-                                bgcolor="#030B16" if self.permiso_crear else "#9CA3AF"
-                           
-                            )
-                        )
+                       self.boton_nuevo 
                     ]
                 ),
 
@@ -341,11 +339,15 @@ class LegajosView(ft.Container):
         )
 
        #page.run_task(self.listar_legajos)
+      
+   
 
     async def load(self):
-        await self.listar_legajos()
         self.permiso_crear = tiene_permiso(self.page_ref, "LEGAJOS_CREAR")
         self.permiso_eliminar= tiene_permiso(self.page_ref, "LEGAJOS_ELIMINAR")
+        self.actualizar_boton_nuevo()
+        await self.listar_legajos()
+
 
 
     def load_data(self):
@@ -819,4 +821,16 @@ class LegajosView(ft.Container):
         dialog.open = True
 
         self.page_ref.update()
-               
+
+    def actualizar_boton_nuevo(self):
+
+        self.boton_nuevo.disabled = not self.permiso_crear
+
+        self.boton_nuevo.style = ft.ButtonStyle(
+            shape=ft.RoundedRectangleBorder(
+                radius=0
+            ),
+            bgcolor="#030B16" if self.permiso_crear else "#9CA3AF"
+        )
+
+        self.boton_nuevo.update()
