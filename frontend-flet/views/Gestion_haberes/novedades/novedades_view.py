@@ -1,8 +1,8 @@
-from datetime import datetime
 
 import flet as ft
 import httpx
-
+from datetime import datetime
+from utils.permisos import tiene_permiso
 from components.alerts import Toast
 from core.config import settings
 from views.Gestion_haberes.novedades.modal_novedades_view import ModalNovedad
@@ -24,6 +24,10 @@ class NovedadesView(ft.Container):
             on_success=self.cargar_datos
         )
 
+        self.permiso_crear  = False
+        self.permiso_editar = False
+        self.permiso_eliminar = False 
+
         self.expand = True
         self.bgcolor = "#F1F5F9"
         self.padding = 20
@@ -35,6 +39,25 @@ class NovedadesView(ft.Container):
         self.total_items = 0
 
         self.novedades = []
+
+        self.boton_nuevo = ft.FilledButton(
+                            "Nuevo",
+                            margin=ft.Margin(0, 0, 10, 0),
+                            icon=ft.Icons.ADD,
+                            width=110,
+                            height=36,
+                            disabled=True,
+                            on_click=lambda e:
+                                    self.page_ref.run_task(
+                                        self.abrir_modal
+                            ),
+                            style=ft.ButtonStyle(
+                                shape=ft.RoundedRectangleBorder(
+                                    radius=0
+                                ),
+                                bgcolor="#030B16"
+                            )
+                        ) 
 
         # ==========================
         # FILTROS
@@ -216,31 +239,8 @@ class NovedadesView(ft.Container):
                         )
                     ]
                 ),
-
-                ft.FilledButton(
-                    
-                    "Nuevo",
-                    margin=ft.Margin(0, 0, 10, 0),  # izquierda, arriba, derecha, abajo
-                  
-                    icon=ft.Icons.ADD,
-                    width=110,
-                    height=36,
-
-                    style=ft.ButtonStyle(
-
-                        bgcolor="#030B16",
-
-                        shape=ft.RoundedRectangleBorder(
-                            radius=0
-                        )
-                    ),
-
-                    on_click=lambda e:
-                    self.page_ref.run_task(
-                        self.abrir_modal
-                    )
-                )
-            ]
+                self.boton_nuevo
+               ]
         )
 
     # =======================================================
@@ -485,6 +485,12 @@ class NovedadesView(ft.Container):
         self.legajo_id =0
 
         self.current_page = 1
+
+        self.permiso_crear = tiene_permiso(self.page_ref, "SUELDOS_NOVEDADES_CREAR")
+        self.permiso_editar = tiene_permiso(self.page_ref, "SUELDOS_NOVEDADES_EDITAR")
+        self.permiso_eliminar= tiene_permiso(self.page_ref, "SUELDOS_NOVEDADES_ELIMINAR")
+        self.actualizar_boton_nuevo()
+
         self.inicializar_filtros()
 
         await self.listar() 
@@ -699,7 +705,9 @@ class NovedadesView(ft.Container):
 
                                         tooltip="Editar",
 
-                                        disabled=item["liquidacion_detalle_id"] is not None,
+                                        icon_color="black" if self.permiso_editar else "gray",
+
+                                        disabled=not self.permiso_editar or item["liquidacion_detalle_id"] is not None,
 
                                         on_click=lambda e,
                                         x=item: self.page_ref.run_task(
@@ -714,11 +722,11 @@ class NovedadesView(ft.Container):
 
                                         icon_size=18,
 
-                                        icon_color="red",
-
+                                        icon_color="red" if self.permiso_eliminar else "gray",
+                                        
                                         tooltip="Eliminar",
-
-                                        disabled=item["liquidacion_detalle_id"] is not None,
+                                        
+                                        disabled=not self.permiso_eliminar or item["liquidacion_detalle_id"] is not None,
 
                                         on_click=lambda e,
                                         x=item: self.page_ref.run_task(
@@ -912,3 +920,15 @@ class NovedadesView(ft.Container):
 
             return False
     
+    def actualizar_boton_nuevo(self):
+        
+                self.boton_nuevo.disabled = not self.permiso_crear
+        
+                self.boton_nuevo.style = ft.ButtonStyle(
+                    shape=ft.RoundedRectangleBorder(
+                        radius=0
+                    ),
+                    bgcolor="#030B16" if self.permiso_crear else "#9CA3AF"
+                )
+        
+                self.boton_nuevo.update()

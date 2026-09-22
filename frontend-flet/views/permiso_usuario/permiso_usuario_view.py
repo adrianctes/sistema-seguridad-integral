@@ -7,11 +7,13 @@ from core.config import settings
 
 class PermisoUsuarioView(ft.Container):
 
-    def __init__(self, page):
+    def __init__(self, page, on_logout):
 
         super().__init__()
 
         self.page_ref = page
+
+        self.on_logout = on_logout
 
         self.toast = Toast()
 
@@ -1121,27 +1123,25 @@ class PermisoUsuarioView(ft.Container):
 
         except Exception as e:
 
-            print(
-                "ERROR GUARDANDO:",
-                e
-            )
-
             await self.toast.show(
 
                 self.page_ref,
 
-                f"Error al guardar permisos: {e}",
+                f"Error al guardar permisos: {e.args}",
 
                 "error"
             )
+            self.on_logout()
 
         finally:
+
 
             self.btn_guardar.disabled = False
 
             self.loading.visible = False
 
             self.page_ref.update()
+
 
     # =========================================================
     # LISTAR PERMISOS

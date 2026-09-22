@@ -20,15 +20,22 @@ class LoginView:
             prefix_icon=ft.Icons.PERSON_OUTLINE,
             width=360,
             height=50,
+            autocorrect=False,
+            enable_suggestions=False,
+            autofill_hints=[]
         )
 
         self.txt_password = ft.TextField(
             label="Contraseña",
             prefix_icon=ft.Icons.LOCK_OUTLINE,
-            password=True,
-            can_reveal_password=True,
             width=360,
             height=50,
+            password=True,
+            can_reveal_password=True,
+            autocorrect=False,
+            enable_suggestions=False,
+            autofill_hints=[],
+                
         )
 
         self.btn_ingresar = ft.FilledButton(
@@ -39,7 +46,7 @@ class LoginView:
         )
 
     def build(self):
-
+   
         return ft.Container(
 
             expand=True,
@@ -202,4 +209,16 @@ class LoginView:
             return None
 
         return response.json()
+
+    def limpiar(self):
+        self.txt_usuario.value = None
+        self.txt_password.value = None
+
+        self.page.update()
+
+        self.txt_usuario.value = ""
+        self.txt_password.value = ""
+
+        self.page.update()
+    
          

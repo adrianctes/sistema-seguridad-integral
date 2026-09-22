@@ -39,6 +39,8 @@ def main(page: ft.Page):
 
         page.controls.clear()
         page.add(login.build())
+        login.limpiar()
+
         page.update()
 
     def mostrar_legajos():
@@ -57,6 +59,11 @@ def main(page: ft.Page):
 
         page.update()
 
+    def on_connect(e):
+        mostrar_login()
+
+    page.on_connect = on_connect
+    
     mostrar_login()
 
 

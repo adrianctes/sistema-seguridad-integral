@@ -5,7 +5,7 @@ from components.alerts import Toast
 import httpx
 import flet as ft
 from .modal_liquidacion_view import LiquidacionDetalleModal
-
+from utils.permisos import tiene_permiso
 
 class LiquidacionDeHaberesView(ft.Container):
 
@@ -20,6 +20,9 @@ class LiquidacionDeHaberesView(ft.Container):
                  self.page_ref
         )
 
+        self.permiso_crear  = False
+        self.permiso_eliminar = False  
+
         self.expand = True
         self.bgcolor = "#F1F5F9"
         self.padding = 20
@@ -29,6 +32,27 @@ class LiquidacionDeHaberesView(ft.Container):
         self.total_items = 0
 
         self.datos = []
+
+        self.boton_nuevo = ft.FilledButton(
+                    "Nuevo",
+                    margin=ft.Margin(0, 0, 10, 0),
+                    icon=ft.Icons.ADD,
+                    width=110,
+                    height=36,
+                    disabled=True,
+                    on_click=lambda e:
+                            self.page_ref.run_task(
+                                self.abrir_formulario,
+                                None
+                    ),
+                    style=ft.ButtonStyle(
+                        shape=ft.RoundedRectangleBorder(
+                            radius=0
+                        ),
+                        bgcolor="#030B16"
+                    )
+                ) 
+
 
         # =====================================
         # FILTROS
@@ -196,28 +220,7 @@ class LiquidacionDeHaberesView(ft.Container):
 
                 ),
 
-                ft.FilledButton(
-
-                    "Nuevo",
-
-                    icon=ft.Icons.ADD,
-
-                    width=110,
-
-                    height=36,
-
-                    style=ft.ButtonStyle(
-                        bgcolor="#030B16",
-                        shape=ft.RoundedRectangleBorder(radius=0)
-                    ),
-
-                    on_click=lambda e:
-                        self.page_ref.run_task(
-                            self.abrir_formulario,
-                            None
-                        )
-
-                )
+               self.boton_nuevo
 
             ]
 
@@ -458,6 +461,10 @@ class LiquidacionDeHaberesView(ft.Container):
         self.current_page = 1
 
         self.cmb_datos_fijos.options=[]
+
+        self.permiso_crear = tiene_permiso(self.page_ref, "SUELDOS_LIQUIDACION_LIQUIDACIONES_CREAR")
+        self.permiso_eliminar= tiene_permiso(self.page_ref, "SUELDOS_LIQUIDACION_LIQUIDACIONES_ELIMINAR")
+        self.actualizar_boton_nuevo()
     
         await self.cargar_datos_fijos_abiertos()
     
@@ -564,10 +571,12 @@ class LiquidacionDeHaberesView(ft.Container):
 
                                         icon_size=18,
 
-                                        icon_color="red",
+                                        icon_color="red" if self.permiso_eliminar else "gray",
 
                                         tooltip="Eliminar",
 
+                                        disabled=not self.permiso_eliminar,
+                                        
                                         on_click=lambda e, x=item:
                                             self.page_ref.run_task(
                                                 self.confirmar_eliminar,
@@ -977,3 +986,16 @@ class LiquidacionDeHaberesView(ft.Container):
         self.modal_liquidacion.mostrar(
             data
         )
+
+    def actualizar_boton_nuevo(self):
+    
+            self.boton_nuevo.disabled = not self.permiso_crear
+    
+            self.boton_nuevo.style = ft.ButtonStyle(
+                shape=ft.RoundedRectangleBorder(
+                    radius=0
+                ),
+                bgcolor="#030B16" if self.permiso_crear else "#9CA3AF"
+            )
+    
+            self.boton_nuevo.update()

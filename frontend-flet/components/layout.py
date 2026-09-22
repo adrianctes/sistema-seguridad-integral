@@ -45,7 +45,7 @@ class Layout:
             "gestionar_usuarios" : UsuariosView(page),
             "crear_usuario": CrearUsuarioView(page),
             "cambiar_contrasena":CambiarPasswordView(page,   self.on_logout),
-            "permiso_usuario": PermisoUsuarioView(page),
+            "permiso_usuario": PermisoUsuarioView(page,  self.on_logout),
             "datos_fijos_liquidacion": DatosFijosView(page, self),
             "crear_editar_datos_fijos": DatosFijosAltaEdicionView(page, self),
             "liquidacion_haberes" :LiquidacionDeHaberesView(page),
