@@ -542,7 +542,7 @@ class LiquidacionHaberesAltaEdicionView(ft.Container):
 
                 response = await client.get(
                     url,
-                    params=params,       # <-- FALTABA ESTO
+                    params=params,      
                     headers=headers,
                     follow_redirects=True
                 )

@@ -1,6 +1,6 @@
 import flet as ft
 import httpx
-
+from utils.permisos import tiene_permiso
 from components.alerts import Toast
 from core.config import settings
 
@@ -29,6 +29,31 @@ class ConceptosListView(ft.Container):
 
         self.conceptos = []
 
+        self.permiso_crear  = False
+        self.permiso_editar = False
+        self.permiso_eliminar = False 
+
+        self.boton_nuevo = ft.FilledButton(
+                                    "Nuevo",
+                                    margin=ft.Margin(0, 0, 10, 0),
+                                    icon=ft.Icons.ADD,
+                                    width=110,
+                                    height=36,
+                                    disabled=True,
+                                    on_click=lambda e:
+                                         self.page_ref.run_task(
+                                        self.abrir_formulario,
+                                        None
+                                    ),
+                                    style=ft.ButtonStyle(
+                                        shape=ft.RoundedRectangleBorder(
+                                            radius=0
+                                        ),
+                                        bgcolor="#030B16"
+                                    )
+                                ) 
+        
+        
         self.txt_busqueda = ft.TextField(
             hint_text="Buscar nombre",
             prefix_icon=ft.Icons.SEARCH,
@@ -138,11 +163,9 @@ class ConceptosListView(ft.Container):
 
         self.content = self.build()
 
-        page.run_task(self.listar)
+        #page.run_task(self.listar)
 
-    #async def init(self):
-
-        #await self.listar()
+   
 
     def build(self):
 
@@ -195,29 +218,7 @@ class ConceptosListView(ft.Container):
                         )
                     ]
                 ),
-
-                ft.FilledButton(
-
-                            "Nuevo",
-                            margin=ft.Margin(0, 0, 10, 0),  # izquierda, arriba, derecha, abajo
-                            icon=ft.Icons.ADD,
-                            width=110,
-                            height=36,
-
-                             on_click=lambda e:
-                                            self.page_ref.run_task(
-                                                self.abrir_formulario,
-                                                None
-                                            ),
-                           
-                            style=ft.ButtonStyle(
-                                shape=ft.RoundedRectangleBorder(
-                                    radius=0
-                                ),
-                                bgcolor="#030B16",
-                                #padding=12
-                            )
-                        )
+                self.boton_nuevo
             ]
         )
 
@@ -345,7 +346,12 @@ class ConceptosListView(ft.Container):
             )
 
             return
-
+        filtro = {
+                    "busqueda": self.txt_busqueda.value.strip(),
+                    "activo": self.chk_activos.value,
+                }
+       
+        print(filtro)
         headers = {
             "Authorization": f"Bearer {token}"
         }
@@ -358,6 +364,7 @@ class ConceptosListView(ft.Container):
 
                 response = await client.get(
                     url,
+                    params=filtro,
                     headers=headers,
                     follow_redirects=True
                 )
@@ -417,7 +424,7 @@ class ConceptosListView(ft.Container):
             )
 
     def load_data(self):
-
+     
         self.table.rows.clear()
 
         datos = self.conceptos
@@ -498,7 +505,11 @@ class ConceptosListView(ft.Container):
 
                                         icon_size=18,
 
+                                        icon_color="black" if self.permiso_editar else "gray",
+
                                         tooltip="Editar",
+
+                                        disabled=not self.permiso_editar,
 
                                         on_click=lambda e, item=item:
                                             self.page_ref.run_task(
@@ -513,7 +524,7 @@ class ConceptosListView(ft.Container):
 
                                         icon_size=18,
 
-                                        icon_color="red",
+                                        icon_color="red" if self.permiso_eliminar else "gray",
 
                                         tooltip="Eliminar",
 
@@ -545,8 +556,23 @@ class ConceptosListView(ft.Container):
         self.lbl_page.value = (
             f"Página {self.current_page} de {total_pages}"
         )
+
+    async def load(self) :
+    
+            self.legajo_id =0
+    
+            self.current_page = 1
+    
+            self.permiso_crear = tiene_permiso(self.page_ref, "SUELDOS_CONCEPTOS_CREAR")
+            self.permiso_editar = tiene_permiso(self.page_ref, "SUELDOS_CONCEPTOS_EDITAR")
+            self.permiso_eliminar= tiene_permiso(self.page_ref, "SUELDOS_CONCEPTOS_ELIMINAR")
+            self.actualizar_boton_nuevo()
+    
+            await self.listar()     
   
     async def buscar(self, e):
+
+        await self.listar()
 
         self.load_data()
 
@@ -637,6 +663,19 @@ class ConceptosListView(ft.Container):
         dialog.open = True
 
         self.page_ref.update()
+
+    def actualizar_boton_nuevo(self):
+            
+        self.boton_nuevo.disabled = not self.permiso_crear
+            
+        self.boton_nuevo.style = ft.ButtonStyle(
+            shape=ft.RoundedRectangleBorder(
+                radius=0
+            ),
+            bgcolor="#030B16" if self.permiso_crear else "#9CA3AF"
+        )
+            
+        self.boton_nuevo.update()
        
 
 

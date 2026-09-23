@@ -522,21 +522,20 @@ class Sidebar(ft.Container):
                 ft.Icons.MANAGE_ACCOUNTS_ROUNDED,
                 "Gestionar usuarios",
                 "gestionar_usuarios",
-                "SEGURIDAD_USUARIOS_ACCEDER"
+                "USUARIOS_GESTIONAR_USUARIOS_ACCEDER"
             ),
 
             self.menu_item(
                 ft.Icons.LOCK_RESET_ROUNDED,
                 "Permisos",
                 "permiso_usuario",
-                "SEGURIDAD_PERMISOS_ACCEDER"
+                "USUARIOS_PERMISOS_ACCEDER"
             ),
 
             self.menu_item(
                 ft.Icons.LOCK_RESET_ROUNDED,
                 "Cambiar contraseña",
-                "cambiar_contrasena",
-                "SEGURIDAD_CONTRASENA_ACCEDER"
+                "cambiar_contrasena"
             ),
         ]
 
@@ -547,10 +546,9 @@ class Sidebar(ft.Container):
         ]
 
         usuarios = None
+        print(len(usuarios_items))
 
-        if usuarios_items:
-
-            usuarios = ft.ExpansionTile(
+        usuarios = ft.ExpansionTile(
 
                 leading=ft.Icon(
                     ft.Icons.PERSON_OUTLINE_ROUNDED,
@@ -642,20 +640,17 @@ class Sidebar(ft.Container):
 
         seguridad = None
 
-        if tiene_permiso(
-            self.page_ref,
-            "SEGURIDAD_ACCEDER"
-        ):
+       
 
-            seguridad_items = []
+        seguridad_items = []
 
-            if usuarios is not None:
+        if usuarios is not None:
 
                 seguridad_items.append(
                     usuarios
                 )
 
-            if auditoria is not None:
+        if auditoria is not None:
 
                 seguridad_items.append(
                     auditoria
@@ -665,7 +660,7 @@ class Sidebar(ft.Container):
             # CREAR SEGURIDAD SOLO SI TIENE CONTENIDO
             # -----------------------------------------
 
-            if seguridad_items:
+        if seguridad_items:
 
                 seguridad = ft.Container(
 

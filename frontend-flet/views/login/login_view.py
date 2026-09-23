@@ -5,10 +5,11 @@ from core.config import settings
 
 class LoginView:
 
-    def __init__(self, page: ft.Page, on_login):
+    def __init__(self, page: ft.Page, on_login, on_change_password):
 
         self.page = page
         self.on_login = on_login
+        self.on_change_password = on_change_password
         self.toast = Toast()
 
         page.overlay.append(self.toast)
@@ -124,9 +125,6 @@ class LoginView:
         usuario = self.txt_usuario.value
         password = self.txt_password.value
 
-        #usuario = "amiño"    #""sbarboza"
-        #password = "newReset123"
-
         if not usuario or not password:
             await self.toast.show(
                                 self.page,
@@ -134,8 +132,6 @@ class LoginView:
                                 "error"
                             )
             return
-
-
        
         self.btn_ingresar.content = ft.ProgressRing(
             width=20,
@@ -152,12 +148,6 @@ class LoginView:
                 )
 
             if not resultado:
-                    """  await self.toast.show(
-                        self.page,
-                        "Usuario o contraseña incorrectos.",
-                        "error"
-                    ) """
-
                     return
 
             usuario  =     resultado["usuario"]
@@ -169,12 +159,20 @@ class LoginView:
 
             self.page.session.store.set("usuario", usuario)
 
+            # =====================================================
+            # VERIFICAR SI DEBE CAMBIAR LA CONTRASEÑA
+            # =====================================================
 
-            # ---------------------------------
-            # TEMPORAL
-            # ---------------------------------
+            requiere_cambio_password = resultado.get(
+                "requiere_cambio_password",
+                False
+            )
 
-            self.on_login()
+            if requiere_cambio_password:
+                 self.on_change_password()
+            else:
+                self.on_login()
+
         finally:
             # Restaurar botón
             self.btn_ingresar.disabled = False

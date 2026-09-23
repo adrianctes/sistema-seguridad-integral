@@ -179,7 +179,6 @@ class NovedadesView(ft.Container):
 
         self.content = self.build()
 
-        #page.run_task(self.listar)
 
 
     def build(self):
