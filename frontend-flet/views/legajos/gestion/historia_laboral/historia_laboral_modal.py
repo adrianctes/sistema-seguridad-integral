@@ -316,6 +316,17 @@ class HistoriaLaboralModal(ft.AlertDialog):
 
     async def api_crear(self, payload):
 
+        token = self.page_ref.session.store.get("access_token")
+        
+        if not token:
+        
+            await self.toast.show(
+            self.page_ref,
+            "Sesión expirada",
+           "error"
+            )
+            return
+
         try:
 
             async with httpx.AsyncClient() as client:
@@ -328,7 +339,7 @@ class HistoriaLaboralModal(ft.AlertDialog):
 
                     headers={
                         "Authorization":
-                        f"Bearer {settings.TOKEN}"
+                        f"Bearer {token}"
                     }
                 )
 

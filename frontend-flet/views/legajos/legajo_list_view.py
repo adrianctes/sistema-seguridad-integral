@@ -377,10 +377,8 @@ class LegajosView(ft.Container):
             )
 
             and (
-
-                x["activo"]
-                if activos
-                else False
+                x["activo"] == activos
+               
             )
         ]
 
@@ -634,7 +632,7 @@ class LegajosView(ft.Container):
 
                 for x in data
             ]
-
+          
             self.current_page = 1
 
             self.load_data()
