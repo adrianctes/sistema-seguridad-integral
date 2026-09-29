@@ -63,7 +63,6 @@ class DatosFijosAltaEdicionView(ft.Container):
                         label="Tipo de Liquidación",
                         expand=True,
                         height=40,
-                        #on_select=self.cambio_modalidad,
                         options=[
                             ft.dropdown.Option("1", "Normal"),
                             ft.dropdown.Option("2", "Sac"),
@@ -590,69 +589,91 @@ class DatosFijosAltaEdicionView(ft.Container):
     
     async def guardar(self, e):
 
-
         if not await self.validar_formulario():
             return
 
+        # Activar loading
         self.loading.visible = True
-
+        self.btn_guardar.disabled = True
         self.page_ref.update()
 
-        payload = {
-            "fecha_carga":   datetime.strptime(self.txt_fecha.value, "%d/%m/%Y").strftime("%Y-%m-%d"),
-            "periodo": self.periodo,
-            "numero" : self.txt_numero.value,
-            "fecha_desde": self.fecha_desde.get_value(),
-            "fecha_hasta": self.fecha_hasta.get_value(),
-            "modalidad_liquidacion_id": int(self.cmb_modalidad_liquidacion.value),
-            "tipo_liquidacion_id" : int(self.cmb_tipo_liquidacion.value),
-            "estado": "Abierto" if self.chk_abierto.value else "Cerrado"
-            #"periodo_pago": self.txt_periodo_pago.value,
-            #"fecha_pago": self.fecha_pago.get_value(),
-        }
-       
-        ok = False
-        if self.id == 0 :
-                ok = await self.api_crear(
-                    payload
-                )
-        else :
-               
-                ok = await self.api_editar(
-                    payload
-                )
+        try:
 
+            payload = {
+                "fecha_carga": datetime.strptime(
+                    self.txt_fecha.value,
+                    "%d/%m/%Y"
+                ).strftime("%Y-%m-%d"),
 
-        if not ok:
-                self.loading.visible = False
-               
-                await self.toast.show(
-                    self.page_ref,
-                     "ocurrio un error al guardar",
-                    "error"
-                ) 
-  
-             
+                "periodo": self.periodo,
+                "numero": self.txt_numero.value,
+                "fecha_desde": self.fecha_desde.get_value(),
+                "fecha_hasta": self.fecha_hasta.get_value(),
 
-                self.page_ref.update()
+                "modalidad_liquidacion_id": int(
+                    self.cmb_modalidad_liquidacion.value
+                ),
 
+                "tipo_liquidacion_id": int(
+                    self.cmb_tipo_liquidacion.value
+                ),
+
+                "estado": "Abierto"
+                    if self.chk_abierto.value
+                    else "Cerrado"
+            }
+
+            if self.id == 0:
+                ok = await self.api_crear(payload)
+            else:
+                ok = await self.api_editar(payload)
+
+            if not ok:
                 return
-        
-        await self.toast.show(
-                    self.page_ref,
-                     "Los datos se guardaron corectamente",
-                    "success"
-                )
 
-        self.page_ref.update()
-      
-        await asyncio.sleep(1)
+            await self.toast.show(
+                self.page_ref,
+                "Los datos se guardaron correctamente",
+                "success"
+            )
 
-        self.page_ref.layout.change_view(
-                    "datos_fijos_liquidacion"
-                )
-        self.loading.visible = False
-        return
+            await asyncio.sleep(1)
+
+            self.page_ref.layout.change_view(
+                "datos_fijos_liquidacion"
+            )
+
+        except httpx.TimeoutException:
+
+            await self.toast.show(
+                self.page_ref,
+                "Tiempo de espera agotado al comunicarse con el servidor.",
+                "error"
+            )
+
+        except httpx.HTTPError as ex:
+
+            await self.toast.show(
+                self.page_ref,
+                f"Error de comunicación: {str(ex)}",
+                "error"
+            )
+
+        except Exception as ex:
+
+            print("ERROR EN GUARDAR:", ex)
+
+            await self.toast.show(
+                self.page_ref,
+                f"Ocurrió un error: {str(ex)}",
+                "error"
+            )
+
+        finally:
+
+            self.loading.visible = False
+            self.btn_guardar.disabled = False
+            self.page_ref.update()
 
     async def validar_formulario(self):
 
@@ -685,7 +706,7 @@ class DatosFijosAltaEdicionView(ft.Container):
             valido = False
         else:
             self.fecha_hasta.error_text = None
-
+       
         # Modalidad de liquidación
         if not self.cmb_modalidad_liquidacion.value:
             self.cmb_modalidad_liquidacion.error_text = "Debe seleccionar una modalidad de liquidación."
@@ -699,13 +720,15 @@ class DatosFijosAltaEdicionView(ft.Container):
 
         return valido
     
-    async def api_crear(self,  data):
-        
-        token = self.page.session.store.get("access_token")
+    async def api_crear(self, data):
 
-        url = f"{settings.URL_BACKEND}/liquidaciones/datos-fijos"
-        
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        token = self.page_ref.session.store.get("access_token")
+
+        url = f"{settings.URL_BACKEND}/datos-fijos-liquidacion"
+
+        try:
+
+            async with httpx.AsyncClient(timeout=30.0) as client:
 
                 response = await client.post(
                     url,
@@ -714,9 +737,47 @@ class DatosFijosAltaEdicionView(ft.Container):
                         "Authorization": f"Bearer {token}"
                     }
                 )
-        
-        return response.status_code in (200, 201)   
-    
+
+            if response.status_code not in (200, 201):
+
+                try:
+                    respuesta = response.json()
+                    mensaje = respuesta.get(
+                        "detail",
+                        "Error al guardar los datos."
+                    )
+                except Exception:
+                    mensaje = response.text
+
+                await self.toast.show(
+                    self.page_ref,
+                    mensaje,
+                    "error"
+                )
+
+                return False
+
+            return True
+
+        except httpx.TimeoutException:
+
+            await self.toast.show(
+                self.page_ref,
+                "El servidor tardó demasiado en responder.",
+                "error"
+            )
+
+            return False
+
+        except httpx.HTTPError as ex:
+
+            await self.toast.show(
+                self.page_ref,
+                f"Error de comunicación: {str(ex)}",
+                "error"
+            )
+
+            return False
     async def api_editar(self, data):
     
         token = self.page.session.store.get("access_token") 

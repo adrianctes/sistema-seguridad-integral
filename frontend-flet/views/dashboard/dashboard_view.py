@@ -12,7 +12,7 @@ class DashboardView(ft.Container):
 
         self.padding = 20
 
-        self.lbl = ft.Text("Cargando...")
+        self.lbl = ft.Text("Cargando")
 
         self.content = ft.Column(
             spacing=10,
