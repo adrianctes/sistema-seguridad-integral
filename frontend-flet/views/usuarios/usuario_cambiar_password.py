@@ -697,7 +697,7 @@ class CambiarPasswordView(ft.Container):
 
 import flet as ft
 import httpx
-
+from utils.permisos import tiene_permiso
 from components.alerts import Toast
 from core.config import settings
 
@@ -1199,12 +1199,7 @@ class CambiarPasswordView(ft.Container):
                 f"/usuarios/{self.usuario_id}/password"
             )
 
-            print("URL:", url)
-            print("USUARIO ID:", self.usuario_id)
 
-            # ======================================================
-            # REQUEST
-            # ======================================================
 
             async with httpx.AsyncClient(
                 timeout=10
@@ -1381,8 +1376,16 @@ class CambiarPasswordView(ft.Container):
 
     def volver(self, e=None):
 
-        self.page_ref.layout.change_view(
-            "gestionar_usuarios"
+        if tiene_permiso(
+            self.page_ref,
+            "USUARIOS_GESTIONAR_USUARIOS_ACCEDER"
+        ):
+            self.page_ref.layout.change_view(
+                "gestionar_usuarios"
+            )
+        else:
+            self.page_ref.layout.change_view(
+            "dashboard"
         )
 
     # ==============================================================
