@@ -516,29 +516,9 @@ class LegajoConceptosView(ft.Container):
             self.page_ref,
             "LEGAJOS_CONCEPTOS_APLICADOS_ELIMINAR"
         )
-
-        # -----------------------------------------------------
-        # DEBUG
-        # -----------------------------------------------------
-
-        print(
-            "PERMISOS LEGAJO CONCEPTOS:",
-            {
-                "CREAR": self.permiso_crear,
-                "EDITAR": self.permiso_editar,
-                "ELIMINAR": self.permiso_eliminar
-            }
-        )
-
-        # -----------------------------------------------------
-        # ACTUALIZAR BOTÓN NUEVO
-        # -----------------------------------------------------
+   
 
         self.actualizar_boton_nuevo()
-
-        # -----------------------------------------------------
-        # CARGAR DATOS
-        # -----------------------------------------------------
 
         await self.listar()
 

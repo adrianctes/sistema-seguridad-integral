@@ -95,6 +95,7 @@ class CrearLegajoView(ft.Container):
             expand=True,
             height=COMMON_HEIGHT,
             options=[],
+            on_select=self.cambio_modalidad_pago
         )
 
         self.txt_telefono = ft.TextField(
@@ -592,4 +593,12 @@ class CrearLegajoView(ft.Container):
 
         e.control.update()
     
-   
+    def cambio_modalidad_pago(self, e):
+
+        modalidad_pago = int(e.control.value)
+
+        self.txt_valor_modalidad_pago.disabled = modalidad_pago == 1
+        if modalidad_pago == 1:
+            self.txt_valor_modalidad_pago.value = "1.00"
+
+        self.txt_valor_modalidad_pago.update()

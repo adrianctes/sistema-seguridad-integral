@@ -704,7 +704,10 @@ class NovedadesView(ft.Container):
 
                                         tooltip="Editar",
 
-                                        icon_color="black" if self.permiso_editar else "gray",
+                                        icon_color=(
+                                        "black" 
+                                        if self.permiso_editar and item["liquidacion_detalle_id"] is None
+                                        else "gray"),
 
                                         disabled=not self.permiso_editar or item["liquidacion_detalle_id"] is not None,
 
@@ -721,7 +724,10 @@ class NovedadesView(ft.Container):
 
                                         icon_size=18,
 
-                                        icon_color="red" if self.permiso_eliminar else "gray",
+                                        icon_color=(
+                                            "black" 
+                                            if self.permiso_editar and item["liquidacion_detalle_id"] is None
+                                            else "gray"),
                                         
                                         tooltip="Eliminar",
                                         
@@ -756,7 +762,7 @@ class NovedadesView(ft.Container):
         await self.listar()
 
     async def abrir_modal(self):
-
+   
         await self.modal.abrir(
            
         )

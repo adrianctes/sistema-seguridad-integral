@@ -603,13 +603,18 @@ class ConceptosListView(ft.Container):
         self.update()
     
     async def abrir_formulario(self, item):
-        view = self.page_ref.layout.views.get('crear_concepto')
-        if not item is None:
+
+        view = self.page_ref.layout.views.get("crear_concepto")
+
+        # Primero agregar/mostrar la vista
+        self.page_ref.layout.change_view("crear_concepto")
+
+        # Ahora la vista ya debería estar asociada al page
+        if item is not None:
             await view.set_mode(item["id"])
         else:
             await view.set_mode(0)
-        self.page_ref.layout.change_view("crear_concepto")
-    
+        
     async def confirmar_eliminar(self, item):
 
         dialog = ft.AlertDialog(

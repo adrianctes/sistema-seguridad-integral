@@ -546,8 +546,7 @@ class Sidebar(ft.Container):
         ]
 
         usuarios = None
-        print(len(usuarios_items))
-
+       
         usuarios = ft.ExpansionTile(
 
                 leading=ft.Icon(

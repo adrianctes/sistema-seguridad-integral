@@ -703,113 +703,7 @@ class LiquidacionDetalleModal:
 
         self.page.update()
 
-    async def imprimir_(self, e):
-
-        if not self.data:
-            return
-
-        liquidacion_id = self.data.get("id")
-
-        if not liquidacion_id:
-            return
-        
-        token = self.page.session.store.get("access_token")
-
-        if not token:
-            await self.toast.show(
-                self.page,
-                "Sesión expirada",
-                "error"
-            )
-            return
-
-        url = (
-            f"{settings.URL_BACKEND}"
-            f"/liquidaciones/"
-            f"{liquidacion_id}"
-            f"/pdf"
-        )
-
-        print(f"Solicitando PDF: {url}")
-
-        headers = {
-            "Authorization": f"Bearer {token}"
-        }
-
-        try:
-
-            async with httpx.AsyncClient() as client:
-
-                response = await client.get(
-                    url,
-                    headers=headers,
-                    timeout=30
-                )
-
-            if response.status_code != 200:
-
-                print(
-                    f"Error PDF: "
-                    f"{response.status_code} "
-                    f"{response.text}"
-                )
-
-                await self.toast.show(
-                    self.page,
-                    "No se pudo generar el PDF",
-                    "error"
-                )
-
-                return
-
-            # -------------------------------------------------
-            # Guardar PDF
-            # -------------------------------------------------
-
-            ruta = (
-                f"liquidacion_"
-                f"{liquidacion_id}.pdf"
-            )
-
-            with open(ruta, "wb") as archivo:
-
-                archivo.write(
-                    response.content
-                )
-
-            print(
-                f"PDF recibido: "
-                f"{len(response.content)} bytes"
-            )
-
-            print(
-                f"PDF guardado: {ruta}"
-            )
-
-            # -------------------------------------------------
-            # Abrir PDF
-            # -------------------------------------------------
-
-            import os
-
-            ruta_absoluta = os.path.abspath(ruta)
-
-            os.startfile(ruta_absoluta)
-
-        except Exception as ex:
-
-            print(
-                f"Error al imprimir: {ex}"
-            )
-
-            await self.toast.show(
-                self.page,
-                "Error al generar el PDF",
-                "error"
-            )
-
-   
-
+ 
     async def imprimir(self, e):
 
         liquidacion_id = self.data.get("id")
@@ -865,32 +759,11 @@ class LiquidacionDetalleModal:
                 return
 
             # --------------------------------------------------
-            # 2. Convertir URL relativa en absoluta
+            # 2. Convertir URL relativa en URL pública
             # --------------------------------------------------
 
             if url_pdf.startswith("/"):
-
-                # Si URL_BACKEND es:
-                # http://192.168.101.90:8000/api/v1
-                #
-                # necesitamos quedarnos con:
-                # http://192.168.101.90:8000
-
-                from urllib.parse import urlparse
-
-                partes = urlparse(
-                    settings.URL_BACKEND
-                )
-
-                base_url = (
-                    f"{partes.scheme}://"
-                    f"{partes.netloc}"
-                )
-
-                url_pdf = (
-                    base_url
-                    + url_pdf
-                )
+                url_pdf = f"{settings.URL_PUBLICA/url_pdf}"
 
             print(f"URL PDF: {url_pdf}")
 
@@ -900,9 +773,7 @@ class LiquidacionDetalleModal:
 
             launcher = ft.UrlLauncher()
 
-            await launcher.open_window(
-                url_pdf
-            )
+            await launcher.launch_url(url_pdf)
 
         except httpx.HTTPStatusError as ex:
 

@@ -93,6 +93,7 @@ class EditarLegajoView(ft.Container):
             expand=True,
             height=COMMON_HEIGHT,
             options=[],
+            on_select=self.cambio_modalidad_pago
         )
         self.txt_valor_modalidad_pago = ft.TextField(
             label="Valor",
@@ -733,3 +734,13 @@ class EditarLegajoView(ft.Container):
             )
     
             self.boton_guardar.update()
+
+    def cambio_modalidad_pago(self, e):
+    
+            modalidad_pago = int(e.control.value)
+    
+            self.txt_valor_modalidad_pago.disabled = modalidad_pago == 1
+            if modalidad_pago == 1:
+                self.txt_valor_modalidad_pago.value = "1.00"
+    
+            self.txt_valor_modalidad_pago.update()

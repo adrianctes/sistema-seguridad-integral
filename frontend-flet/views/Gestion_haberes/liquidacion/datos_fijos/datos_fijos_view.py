@@ -778,7 +778,7 @@ class DatosFijosView(ft.Container):
         item_id = item["id"]
 
         url = (
-            f"{settings.URL_BACKEND}/liquidacion/datos-fijos/{item_id}"
+            f"{settings.URL_BACKEND}/datos-fijos-liquidacion/{item_id}"
         )
 
         try:

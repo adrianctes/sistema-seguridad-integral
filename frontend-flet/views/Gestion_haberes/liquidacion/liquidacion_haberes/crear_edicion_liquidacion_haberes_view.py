@@ -546,11 +546,7 @@ class LiquidacionHaberesAltaEdicionView(ft.Container):
                     headers=headers,
                     follow_redirects=True
                 )
-
-            """ print("URL:", response.url)
-            print("STATUS:", response.status_code)
-            print("RESPONSE:", response.text)
- """
+                
             if response.status_code == 401:
 
                 await self.toast.show(
@@ -1883,7 +1879,7 @@ class LiquidacionHaberesAltaEdicionView(ft.Container):
                     json=payload,
                     headers=headers
                 )
-
+                
                 if response.status_code == 200:
 
                     resultado = response.json()

@@ -275,8 +275,6 @@ class ModalNovedad(ft.AlertDialog):
     async def abrir(self, item=None):
 
         self.limpiar()
-        print(item)
-
         self.item_id = 0
 
         self.lbl_titulo_accion.value = (
