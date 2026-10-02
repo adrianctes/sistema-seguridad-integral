@@ -737,7 +737,6 @@ class LiquidacionDetalleModal:
             "Authorization": f"Bearer {token}"
         }
 
-        print(f"Solicitando token PDF: {url}")
 
         try:
 
@@ -765,7 +764,6 @@ class LiquidacionDetalleModal:
             if url_pdf.startswith("/"):
                 url_pdf = f"{settings.URL_PUBLICA/url_pdf}"
 
-            print(f"URL PDF: {url_pdf}")
 
             # --------------------------------------------------
             # 3. Abrir PDF
