@@ -4,7 +4,6 @@ import httpx
 
 from components.alerts import Toast
 from core.config import settings
-from core.constants import MODALIDAD_PAGO
 
 class CrearEditarConceptoView(ft.Container):
 
@@ -35,23 +34,56 @@ class CrearEditarConceptoView(ft.Container):
             label="Código",
             border_radius=0,
             expand=True,
-            height=60,
+            height=55,
             max_length=6,
             on_change=self.force_upper
         )
 
         self.txt_nombre = ft.TextField(
-            label="Nombre",
+            label="Descripcion",
             border_radius=0,
             expand=True,
-            height=60,
+            height=55,
             max_length=60,
         )
 
         self.txt_orden = ft.TextField(
-            label="Orden",
+            label="Orden impresion",
             border_radius=0,
-            height=40
+            height=55,
+            max_length=10,
+        )
+
+        self.txt_abreviatura = ft.TextField(
+            label="Abreviatura",
+            border_radius=0,
+            expand= True,
+            height=55,
+            max_length=10,
+            on_change=self.force_upper
+        )
+
+        self.txt_secuencia = ft.TextField(
+            label="Secuencia",
+            border_radius=0,
+            expand= True,
+            height=55,
+            max_length=10,
+            keyboard_type=ft.KeyboardType.NUMBER,
+            on_change=self.solo_numeros
+        )
+
+        self.cmb_unidad_medida = ft.Dropdown(
+            label="Unidad de medida",
+            border_radius=0,
+            expand=True,
+            height=35,
+            value="IMPORTE",
+            options=[
+                ft.dropdown.Option("DIA"),
+                ft.dropdown.Option("HORA"),
+                ft.dropdown.Option("IMPORTE")
+            ]
         )
         
         self.cmb_tipo_calculo = ft.Dropdown(
@@ -62,7 +94,10 @@ class CrearEditarConceptoView(ft.Container):
 
                 height=40,
 
+                value = "FIJO",
+
                 border_radius=0,
+                margin=ft.Margin(0, -15, 0, 0),
 
                 options=[
 
@@ -80,28 +115,71 @@ class CrearEditarConceptoView(ft.Container):
             label="Clasificación",
             border_radius=0,
             expand=True,
+            height=30,
             options=[]
         )
 
         self.txt_formula = ft.TextField(
             label="Fórmula",
-            height=40,
+            height=55,
             multiline=True,
             min_lines=1,
             max_lines=1,
             visible=False,
             expand=True,
             border_radius=0,
-        )
-        self.cmb_modalidad_pago = ft.Dropdown(
-            label="Modalidad de pago",
-            expand=True,
-            height=55,
-            options=[],
+            max_length=100
         )
         self.chk_novedad = ft.Checkbox(label="Es novedad", value=False)
         self.chk_activo = ft.Checkbox(label="Activo", value=True)
+        self.container_codigo = ft.Container(
+            expand=1,
+            content=self.txt_codigo,
+            visible=False
+        )
+        self.container_abreviatura = ft.Container(
+            expand=1,
+            content=self.txt_abreviatura
+        )
 
+        self.container_secuencia = ft.Container(
+                    expand=1,
+                    content=self.txt_secuencia
+                )
+        self.container_orden = ft.Container(
+                    expand=1,
+                    content=self.txt_orden
+                )
+        self.container_unidad_medida = ft.Container(
+                            expand=1,
+                            content=self.cmb_unidad_medida,
+                            margin=ft.Margin(0, -15, 0, 0),
+                            )
+        self.container_formula = ft.Container(
+                    expand=3,
+                    content=self.txt_formula
+                )
+    
+               
+        self.fila_1= ft.Row(
+            controls=[
+                self.container_codigo,
+                self.container_abreviatura,
+            ]
+        )
+        self.fila_3 = ft.Row(
+                            controls=[
+                                self.container_secuencia,
+                                self.container_orden,
+                                self.container_unidad_medida
+                            ]
+                        )
+        self.fila_4= ft.Row(
+                    controls=[
+                        self.cmb_tipo_calculo,
+                        self.container_formula,
+                    ]
+                )
         self.content = ft.Stack(
             expand=True,
             controls=[
@@ -109,10 +187,10 @@ class CrearEditarConceptoView(ft.Container):
                 self.toast
             ]
         )
-
         page.run_task(self.load)
         
     def build(self):
+   
         return ft.Column(
             expand=True,
             spacing=12,
@@ -128,24 +206,20 @@ class CrearEditarConceptoView(ft.Container):
                     content=ft.Column(
                         spacing=18,
                         controls=[
-                            ft.Row(
-                                ft.Container(
-                                            expand=1,
-                                             content=self.cmb_modalidad_pago
-                                        )
-                            ),
+                            self.fila_1,
 
                             ft.Row([
-                                ft.Container(expand=1, content=self.txt_codigo),
-                                ft.Container(expand=3, content=self.txt_nombre),
-                            ]),
+                                     ft.Container(expand=3, content=self.txt_nombre)
+                                    ]),
+                            self.fila_3,  
+                            self.fila_4,
 
-                           ft.Row([
-                                ft.Container(expand=1, content=self.txt_orden),
-                                ft.Container(expand=1, content=self.cmb_tipo_calculo),
-                                ft.Container(expand=2, content=self.txt_formula),
-                            ]),
-                           
+                            #  ft.Row([
+                            #    ft.Container(expand=1, content=self.cmb_tipo_calculo),
+                            #    ft.Container(expand=2, content=self.txt_formula)
+                            #]), 
+
+
                             self.cmb_clasificacion,
 
                             ft.Row([
@@ -182,43 +256,61 @@ class CrearEditarConceptoView(ft.Container):
                     )
                 )
             ]
+
         )
 
     def on_tipo_change(self, e):
       
-        visible = (
-            e.control.value == "FORMULA"
+        #visible = (
+        #    e.control.value == "FORMULA"
+        #)
+        #self.txt_formula.visible = visible
+
+        #self.content.controls[0] = self.build()
+        self.txt_formula.visible = (
+            self.cmb_tipo_calculo.value == "FORMULA"
         )
-        self.txt_formula.visible = visible
-
-        self.content.controls[0] = self.build()
-
-        self.content.update()
+        self.page_ref.update()
+       
 
     def force_upper(self, e):
         e.control.value = (e.control.value or "").upper()
         e.control.update()
 
-    async def set_mode(self, concepto_id:int ):
+    def solo_numeros(self, e):
 
-            self.limpiar()
+        limpio = "".join(
+            filter(str.isdigit, e.control.value or "")
+        )
 
-            self.concepto_id = concepto_id
+        if e.control.value != limpio:
 
-           
-            if concepto_id == 0:
-               self.titulo_accion = "Nuevo Concepto"
-               self.lbl_titulo_accion.value = self.titulo_accion
-               return
+            e.control.value = limpio
+            e.control.update()
 
+    async def set_mode(self, concepto_id: int):
+        self.limpiar()
+        self.concepto_id = concepto_id
+        
+        if concepto_id == 0:
+            self.titulo_accion = "Nuevo Concepto"
+            self.lbl_titulo_accion.value = self.titulo_accion
+            self.container_codigo.visible = False
+            self.container_secuencia.visible= False
+                       
+        else:
             item = await self.obtener_concepto_by_id(concepto_id)
 
             if item:
                 self.editar(item)
+                self.container_codigo.visible = True
+                self.container_secuencia.visible= True
 
+        #self.page_ref.update()        
+
+         
     async def load(self):
         await self.cargar_clasificaciones()
-        await self.cargar_modalidad_pago()
 
     async def cargar_clasificaciones(self):
 
@@ -240,15 +332,18 @@ class CrearEditarConceptoView(ft.Container):
                 ft.dropdown.Option(str(x["id"]), x["nombre"])
                 for x in datos
             ]
-
+            if self.cmb_clasificacion.options:
+                self.cmb_clasificacion.value = self.cmb_clasificacion.options[0].key
             self.cmb_clasificacion.update()
+            
 
         except Exception as ex:
             await self.toast.show(self.page_ref, str(ex), "error")
 
     async def obtener_concepto_by_id(self, id: int):
 
-        token = self.page.session.store.get("access_token")
+        token = self.page_ref.session.store.get("access_token")
+
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{settings.URL_BACKEND}/conceptos/{id}",
@@ -271,11 +366,14 @@ class CrearEditarConceptoView(ft.Container):
             "activo": data.get("activo", True),
             "formula": data.get("formula"),
             "orden" : data.get("orden"),
-            "modalidad_pago_id" : data.get("modalidad_pago_id")
+            "abreviatura"  : data.get("abreviatura"),
+            "secuencia"  : data.get("secuencia"),
+            "unidad_medida"  : data.get("unidad_medida")
+
         }
 
     def editar(self, item):
-
+   
         self.titulo_accion = "Editar Concepto"
         self.lbl_titulo_accion.value = self.titulo_accion
 
@@ -283,6 +381,10 @@ class CrearEditarConceptoView(ft.Container):
 
         self.txt_codigo.value = item["codigo"]
         self.txt_nombre.value = item["nombre"]
+
+        self.txt_abreviatura.value =  item["abreviatura"]
+        self.cmb_unidad_medida.value =  item["unidad_medida"]
+        self.txt_secuencia.value =  item["secuencia"] 
 
         self.cmb_tipo_calculo.value = item["tipo_calculo"]
         self.cmb_clasificacion.value = item["clasificacion_concepto_id"]
@@ -293,11 +395,7 @@ class CrearEditarConceptoView(ft.Container):
         self.chk_novedad.value = item["es_novedad"]
         self.chk_activo.value = item["activo"]
 
-        self.cmb_modalidad_pago.value = item["modalidad_pago_id"] 
         self.txt_orden.value =  item["orden"] or ""
-
-   
-        self.page_ref.update()
 
     def limpiar(self):
 
@@ -306,48 +404,39 @@ class CrearEditarConceptoView(ft.Container):
         self.lbl_titulo_accion.value = "Nuevo Concepto"
 
         self.txt_codigo.value = ""
+        self.container_codigo.visible = False
 
         self.txt_nombre.value = ""
-
+        self.txt_nombre.error = ""
+        self.txt_nombre.error = None
+     
         self.txt_orden.value = ""
 
-        self.cmb_tipo_calculo.value = ""
-        self.cmb_tipo_calculo.selected_index = None
-
-        self.cmb_clasificacion.value = ""
-        self.cmb_clasificacion.selected_index = None
-
-        self.cmb_modalidad_pago.value = ""
-        self.cmb_modalidad_pago.selected_index = None
+        self.txt_abreviatura.value = ""
+        self.txt_abreviatura.error= ""
+        self.txt_abreviatura.error = None
+       
+        self.txt_secuencia.value =""
+        self.txt_secuencia.error =""
+        self.txt_secuencia.error = None
+               
+        self.txt_orden.value = ""
+            
 
         self.txt_formula.value = ""
-
         self.txt_formula.visible = False
 
         self.chk_novedad.value = False
 
         self.chk_activo.value = True
 
+
         self.page_ref.update()
-    async def cargar_modalidad_pago(self):
-        self.cmb_modalidad_pago.options = [
 
-                *[
-                    ft.dropdown.Option(
-                        key=str(item["id"]),
-                        text=item["nombre"]
-                    )
-
-                    for item in MODALIDAD_PAGO
-                ],
-
-                ft.dropdown.Option(
-                    key="0",
-                    text="Todas"
-                )
-            ]
-          
     async def guardar(self, e):
+        if not await self.validar_formulario():
+            return
+        
         try:
             self.loading.visible = True
             self.page_ref.update()
@@ -361,7 +450,9 @@ class CrearEditarConceptoView(ft.Container):
                 "formula": self.txt_formula.value if self.cmb_tipo_calculo.value == "FORMULA" else None,
                 "es_novedad": self.chk_novedad.value,
                 "activo": self.chk_activo.value,
-                "modalidad_pago_id": self.cmb_modalidad_pago.value,
+                "secuencia": self.txt_secuencia.value,
+                "abreviatura": self.txt_abreviatura.value,
+                "unidad_medida" : self.cmb_unidad_medida.value
             }
           
             statu_code = False
@@ -377,14 +468,21 @@ class CrearEditarConceptoView(ft.Container):
                 vista = self.page_ref.layout.views["conceptos"]
                 await vista.reload_view()
                 self.page_ref.layout.change_view("conceptos")
+            else:
+                await self.toast.show(
+                   self.page,
+                    "Error al guardar",
+                   "error"
+                )
+        
 
         finally:
             self.loading.visible = False
             self.page_ref.update()
 
     async def api_crear(self, data):
-
-        token = self.page.session.store.get("access_token")
+    
+        token = self.page_ref.session.store.get("access_token")
 
         url = f"{settings.URL_BACKEND}/conceptos"
 
@@ -402,7 +500,7 @@ class CrearEditarConceptoView(ft.Container):
     
     async def api_editar(self, data):
 
-        token = self.page.session.store.get("access_token")
+        token = self.page_ref.session.store.get("access_token")
 
         url = f"{settings.URL_BACKEND}/conceptos/{self.concepto_id}"
 
@@ -417,3 +515,46 @@ class CrearEditarConceptoView(ft.Container):
             )
 
         return response.status_code in (200, 201)
+
+    async def validar_formulario(self):
+    
+            valido = True
+    
+            if  self.concepto_id !=0:
+                if  not self.txt_codigo.value:
+                    self.txt_codigo.error = "Debe ingresar codigo."
+                    valido = False
+                else:
+                    self.txt_codigo.error = None
+    
+            
+            if not self.txt_abreviatura.value:
+                self.txt_abreviatura.error = "Debe ingresar abreviatura."
+                valido = False
+            else:
+                self.txt_abreviatura.error = None
+
+            if not self.txt_nombre.value:
+                self.txt_nombre.error = "Debe ingresar descripcion."
+                valido = False
+            else:
+                self.txt_nombre.error = None
+            
+            if self.concepto_id != 0:
+                if not self.txt_secuencia.value:
+                    self.txt_secuencia.error = "Debe ingresar secuencia."
+                    valido = False
+                else:
+                    self.txt_secuencia.error = None
+
+           
+            if self.cmb_tipo_calculo.value =="FORMULA": 
+                if not self.txt_formula.value:
+                    self.txt_formula.error = "Debe ingresar formula."
+                    valido = False
+                else:
+                    self.txt_formula.error = None
+
+            self.page_ref.update()
+            
+            return valido

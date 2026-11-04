@@ -6,7 +6,6 @@ import httpx
 import calendar
 from core.config import settings
 from components.datapicker import DatePickerCustom
-from core.constants import MODALIDAD_PAGO
 
 from utils.formatters import filtrar_decimal, formatear_moneda,parsear_moneda
 
@@ -21,7 +20,6 @@ class ModalNovedad(ft.AlertDialog):
 
         self.legajo_id = 0
         self.item_id = 0
-        self.modalidad_pago_id = 0
         self.concepto_id = 0
     
         self.shape = ft.RoundedRectangleBorder(radius=0)
@@ -49,19 +47,6 @@ class ModalNovedad(ft.AlertDialog):
             size=12,
             weight=ft.FontWeight.BOLD
         )
-
-        self.lbl_titulo_condicion = ft.Text(
-            value="Condicion",
-            size=12,
-            weight=ft.FontWeight.BOLD
-        )
-        
-        self.lbl_condicion = ft.Text(
-            value="",
-            size=12,
-            weight=ft.FontWeight.BOLD
-        )
-
 
         self.lbl_mensaje = ft.Text(
             "",
@@ -175,16 +160,6 @@ class ModalNovedad(ft.AlertDialog):
                     ft.Container(
                             margin=ft.Margin(0, -14, 0, 0),
                             content=self.cmb_legajo
-                        ),
-                        ft.Container(
-                             content=ft.Row(
-                                    controls=[
-                                        self.lbl_titulo_condicion,
-                                        self.lbl_condicion,
-                                    ],
-                                    spacing=5,
-                                )
-                          
                         ),
                         ft.Container(
                             content=self.cmb_concepto
@@ -305,9 +280,6 @@ class ModalNovedad(ft.AlertDialog):
 
             self.cmb_legajo.value = legajo_id
 
-            # Ahora self.legajos ya existe
-            self.obtener_condicion()
-
             await self.cargar_conceptos()
 
             self.cmb_concepto.value = str(
@@ -399,10 +371,6 @@ class ModalNovedad(ft.AlertDialog):
 
         self.legajo_id = legajo["id"]
 
-        self.modalidad_pago_id = legajo[
-            "modalidad_pago_id"
-        ]
-
         token = self.page_ref.session.store.get(
             "access_token"
         )
@@ -414,8 +382,7 @@ class ModalNovedad(ft.AlertDialog):
 
             response = await client.get(
                 f"{settings.URL_BACKEND}"
-                f"/conceptos/modalidad-pago/"
-                f"{self.modalidad_pago_id}/novedades",
+                f"/conceptos/novedades",
 
                 headers={
                     "Authorization": f"Bearer {token}"
@@ -645,52 +612,13 @@ class ModalNovedad(ft.AlertDialog):
                 e.control.value = nuevo_valor
                 e.control.update()
    
-    def obtener_condicion(self):
-
-            if not self.cmb_legajo.value:
-                self.lbl_condicion.value = ""
-                return False
-
-            legajo = self.legajos.get(
-                str(self.cmb_legajo.value)
-            )
-
-            if not legajo:
-                self.lbl_condicion.value = ""
-                return False
-
-            self.legajo_id = legajo["id"]
-
-            self.modalidad_pago_id = legajo[
-                "modalidad_pago_id"
-            ]
-
-            modalidad = next(
-                (
-                    m
-                    for m in MODALIDAD_PAGO
-                    if m["id"] == self.modalidad_pago_id
-                ),
-                None
-            )
-
-            self.lbl_condicion.value = (
-                modalidad["nombre"]
-                if modalidad
-                else ""
-            )
-
-            return True
-
     async def cambio_legajo(self, e=None):
 
-        if self.obtener_condicion():
+        self.cmb_concepto.value = None
 
-            self.cmb_concepto.value = None
+        await self.cargar_conceptos()
 
-            await self.cargar_conceptos()
-
-            self.page_ref.update()
+        self.page_ref.update()
 
     def calcular_ultimo_dia_del_mes(self):
 

@@ -158,9 +158,17 @@ class LegajoConceptosView(ft.Container):
                 ft.DataColumn(
                     ft.Text("Cantidad", size=11)
                 ),
+                ft.DataColumn(
+                    ft.Text("unidad medida", size=11)
+                ),
+                
 
                 ft.DataColumn(
-                    ft.Text("Valor", size=11)
+                    ft.Text("Valor unidad", size=11)
+                ),
+
+                ft.DataColumn(
+                    ft.Text("Valor total", size=11)
                 ),
 
                 ft.DataColumn(
@@ -427,8 +435,10 @@ class LegajoConceptosView(ft.Container):
                         "cantidad"
                     ),
 
-                    "valor": x.get(
-                        "valor",
+                    "unidad_medida": x.get("concepto", {}).get("unidad_medida", ""),
+
+                    "valor_unidad": x.get(
+                        "valor_unidad",
                         0.0
                     ),
 
@@ -629,6 +639,15 @@ class LegajoConceptosView(ft.Container):
                                 size=11
                             )
                         ),
+                        ft.DataCell(
+                            ft.Text(
+                                str(
+                                item["unidad_medida"]
+                                ),
+                            size=11
+                            )
+                        ),
+                        
 
                         # -------------------------------------
                         # VALOR
@@ -638,7 +657,7 @@ class LegajoConceptosView(ft.Container):
 
                             ft.Text(
 
-                                f'{float(item["valor"]):,.2f}'
+                                f'{float(item["valor_unidad"]):,.2f}'
                                 .replace(",", "X")
                                 .replace(".", ",")
                                 .replace("X", "."),
@@ -646,6 +665,19 @@ class LegajoConceptosView(ft.Container):
                                 size=11
                             )
                         ),
+
+                        ft.DataCell(
+                        
+                            ft.Text(
+                        
+                             f'{float(item["valor_unidad"]) *float(item["cantidad"]):,.2f}'
+                            .replace(",", "X")
+                            .replace(".", ",")
+                            .replace("X", "."),
+                        
+                            size=11
+                                )
+                            ),
 
                         # -------------------------------------
                         # ACTIVO

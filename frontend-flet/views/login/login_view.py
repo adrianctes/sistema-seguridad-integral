@@ -124,7 +124,7 @@ class LoginView:
 
         usuario = self.txt_usuario.value
         password = self.txt_password.value
-
+        
         if not usuario or not password:
             await self.toast.show(
                                 self.page,

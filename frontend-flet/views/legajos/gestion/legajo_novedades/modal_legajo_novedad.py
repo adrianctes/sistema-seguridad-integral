@@ -19,7 +19,6 @@ class ModalLegajoNovedad(ft.AlertDialog):
 
         self.legajo_id = 0
         self.item_id = 0
-        self.modalidad_pago_id = 0
 
         self.toast = Toast()
 
@@ -247,11 +246,6 @@ class ModalLegajoNovedad(ft.AlertDialog):
 
         self.legajo_id = legajo_id
 
-        legajo = await self.obtener_legajo_by_id(legajo_id)
-
-        if legajo:
-            self.modalidad_pago_id = legajo.get("modalidad_pago_id")
-
         await self.cargar_conceptos()
 
         self.cmb_concepto.disabled = False
@@ -305,12 +299,13 @@ class ModalLegajoNovedad(ft.AlertDialog):
     # =====================================================
 
     async def cargar_conceptos(self):
+         
 
         async with httpx.AsyncClient() as client:
 
             response = await client.get(
 
-                f"{settings.URL_BACKEND}/conceptos/modalidad-pago/{self.modalidad_pago_id}",
+                f"{settings.URL_BACKEND}/conceptos/novedades",
 
                 headers={
                     "Authorization": f"Bearer {settings.TOKEN}"
@@ -366,47 +361,6 @@ class ModalLegajoNovedad(ft.AlertDialog):
         )
 
 
-    # =====================================================
-    # OBTENER LEGAJO
-    # =====================================================
-
-    async def obtener_legajo_by_id(self, legajo_id: int):
-
-        token = self.page.session.store.get("access_token")
-
-        url = f"{settings.URL_BACKEND}/legajos/{legajo_id}"
-
-        async with httpx.AsyncClient() as client:
-
-            response = await client.get(
-
-                url,
-
-                headers={
-                    "Authorization": f"Bearer {token}"
-                }
-            )
-
-        if response.status_code != 200:
-
-            await self.toast.show(
-                self.page_ref,
-                f"Error API: {response.status_code}",
-                "error"
-            )
-
-            return None
-
-        data = response.json()
-
-        return {
-
-            "id": data.get("id"),
-
-            "modalidad_pago_id": data.get(
-                "modalidad_pago_id"
-            )
-        }
     def cerrar(self, e=None):
 
         self.open = False

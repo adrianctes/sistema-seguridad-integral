@@ -16,7 +16,7 @@ class ModalLegajoConcepto(ft.AlertDialog):
 
         self.legajo_id = 0
         self.item_id = 0
-        self.modalidad_pago_id = 0
+        self.concepto_id = 0
 
         self.toast = Toast()
         self.shape = ft.RoundedRectangleBorder(radius=0)
@@ -73,7 +73,8 @@ class ModalLegajoConcepto(ft.AlertDialog):
         # =========================
         # FIELDS
         # =========================
-        self.cmb_concepto = ft.Dropdown(label="Concepto", options=[], expand=True)
+        self.cmb_concepto = ft.Dropdown(label="Concepto", options=[], expand=True,
+                                         on_select=self.selecciona_concepto)
         ft.Margin(4, 0, 0, 0),
         #self.dp_desde = DatePickerCustom(
         #    self.page_ref,
@@ -83,7 +84,11 @@ class ModalLegajoConcepto(ft.AlertDialog):
         #    self.page_ref,
         #    label="Fecha Hasta"
         #)
-        self.txt_valor = ft.TextField(label="Valor", 
+        self.txt_unidad_medida = ft.TextField(label="Unidad medida", 
+                                              expand=True,   
+                                              value="")
+
+        self.txt_valor_unidad = ft.TextField(label="Valor unitario", 
                                       expand=True,   
                                       value="0.00",
                                       max_length=10,
@@ -115,7 +120,7 @@ class ModalLegajoConcepto(ft.AlertDialog):
 
                     # CONCEPTO
                     ft.Container(
-                        margin=ft.Margin(0, -14, 0, 0),
+                        margin=ft.Margin(0, -14, 0, 10),
                         content=self.cmb_concepto
                     ),
 
@@ -131,7 +136,14 @@ class ModalLegajoConcepto(ft.AlertDialog):
 
                     ft.Container(
                         expand=1,
-                        content=self.txt_valor
+                        content=self.txt_unidad_medida,
+                        margin=ft.Margin(0, -18, 0, 0),
+                    ),
+                    
+
+                    ft.Container(
+                        expand=1,
+                        content=self.txt_valor_unidad
                     ),
                 ]
             ),
@@ -196,18 +208,24 @@ class ModalLegajoConcepto(ft.AlertDialog):
         self.legajo_id = legajo_id
 
         legajo = await self.obtener_legajo_by_id(legajo_id)
-        self.modalidad_pago_id= legajo.get('modalidad_pago_id')
-       
+
         await self.cargar_conceptos()
         self.cmb_concepto.disabled = False
+        self.txt_unidad_medida.disabled = True
+        self.txt_cantidad.disabled = False
+        self.txt_unidad_medida.visible = True
+        self.txt_valor_unidad.visible = True
+
         self.item_id = 0
+    
         if item:
             self.titulo_accion = "Editar Concepto del Legajo"
             self.lbl_titulo_accion.value = self.titulo_accion
             self.item_id = item["id"]
             self.cmb_concepto.value = item["concepto_id"]
             self.cmb_concepto.disabled = True
-            self.txt_valor.value = str(item["valor"])
+            self.txt_valor_unidad.value = str(item["valor_unidad"])
+            self.txt_unidad_medida.value = str(item["unidad_medida"])
             self.txt_cantidad.value = str(item["cantidad"])
             self.chk_activo.value = item["activo"]
 
@@ -226,14 +244,18 @@ class ModalLegajoConcepto(ft.AlertDialog):
         async with httpx.AsyncClient() as client:
 
             r = await client.get(
-                f"{settings.URL_BACKEND}/conceptos/modalidad-pago/{self.modalidad_pago_id}",
+                f"{settings.URL_BACKEND}/conceptos",
                 headers={
                     "Authorization": f"Bearer {token}"
                 }
             )
 
         self.cmb_concepto.options = [
-            ft.dropdown.Option(str(x["id"]), x["nombre"])
+            ft.dropdown.Option(
+                key=str(x["id"]),
+                text=x["nombre"],
+                data=x
+            )
             for x in r.json()
         ]
   
@@ -241,11 +263,12 @@ class ModalLegajoConcepto(ft.AlertDialog):
         self.item_id = 0
         self.cmb_concepto.value = None
         self.cmb_concepto.value = ""
-        self.txt_valor.error = None
+        self.txt_valor_unidad.error = None
         self.txt_cantidad.error = None
         #self.dp_desde.value = ""
         #self.dp_hasta.value = ""
-        self.txt_valor.value = "0.00"
+        self.txt_unidad_medida.value = ""
+        self.txt_valor_unidad.value = "0.00"
         self.txt_cantidad.value = "1.00"
         self.chk_activo.value = True
         self.lbl_mensaje.value = ""
@@ -262,15 +285,15 @@ class ModalLegajoConcepto(ft.AlertDialog):
         try :
 
             data = {
-                #"legajo_id": self.legajo_id,
-                "concepto_id": int(self.cmb_concepto.value),
+                "id":  self.item_id,
+                "concepto_id": self.concepto_id,
                 #"fecha_desde": self.dp_desde.value,
                 #"fecha_hasta": self.dp_hasta.value or None,
-                "valor": float(
-                            self.txt_valor.value
+                "valor_unidad": float(
+                            self.txt_valor_unidad.value
                                 .replace(".", "")
                                 .replace(",", ".")
-                        ),#float(self.txt_valor.value or 0),
+                        ),#float(self.txt_valor.value or 0),        
                 "cantidad": float(self.txt_cantidad.value or 0),
                 "activo": self.chk_activo.value
             }
@@ -281,7 +304,7 @@ class ModalLegajoConcepto(ft.AlertDialog):
 
             if not ok:
                 raise Exception()
-                #return
+               
            
             self.lbl_mensaje.value = (
                     "Registrado creado correctamente"
@@ -390,9 +413,7 @@ class ModalLegajoConcepto(ft.AlertDialog):
                     "modalidad_liquidacion_id":  data.get("modalidad_liquidacion_id"),
                     "telefono": data.get("telefono", ""),
                     "activo": data.get("activo", True),
-                    "sac":  data.get("sac", False),
-                    "modalidad_pago_id" : data.get("modalidad_pago_id"),
-                    "valor_modalidad_pago" : data.get("valor_modalidad_pago")
+                    "sac":  data.get("sac", False)
                 }
         
         return legajo
@@ -401,7 +422,7 @@ class ModalLegajoConcepto(ft.AlertDialog):
 
         # limpiar errores anteriores
         self.cmb_concepto.error_text = None
-        self.txt_valor.error_text = None
+        self.txt_valor_unidad.error_text = None
         self.txt_cantidad.error_text = None
 
         # ======================
@@ -420,11 +441,11 @@ class ModalLegajoConcepto(ft.AlertDialog):
         # ======================
         # VALIDAR VALOR
         # ======================
-        valor = (self.txt_valor.value or "").strip()
+        valor = (self.txt_valor_unidad.value or "").strip()
 
         if valor == "":
 
-            self.txt_valor.error_text = (
+            self.txt_valor_unidad.error_text = (
                 "Debe ingresar un valor."
             )
 
@@ -442,7 +463,7 @@ class ModalLegajoConcepto(ft.AlertDialog):
 
             if numero < 0:
 
-                self.txt_valor.error_text = (
+                self.txt_valor_unidad.error_text = (
                     "El valor no puede ser negativo."
                 )
 
@@ -452,7 +473,7 @@ class ModalLegajoConcepto(ft.AlertDialog):
 
         except ValueError:
 
-            self.txt_valor.error_text = (
+            self.txt_valor_unidad.error_text = (
                 "Valor inválido."
             )
 
@@ -506,6 +527,8 @@ class ModalLegajoConcepto(ft.AlertDialog):
         return True
     
     async def api_crear(self, data):
+
+        print(data)
         token = self.page_ref.session.store.get("access_token")
 
         url = (
@@ -566,7 +589,7 @@ class ModalLegajoConcepto(ft.AlertDialog):
         token = self.page_ref.session.store.get("access_token")
 
         url = (
-             f"{settings.URL_BACKEND}/legajos/{self.legajo_id}/conceptos/{self.item_id}"
+             f"{settings.URL_BACKEND}/legajos/conceptos/{self.item_id}"
         )
 
         try:
@@ -617,5 +640,31 @@ class ModalLegajoConcepto(ft.AlertDialog):
             self.page.update()
 
             return False
+
+    def selecciona_concepto(self, e):
+        concepto_id = self.cmb_concepto.value
+
+        opcion = next(
+            (
+                op for op in self.cmb_concepto.options
+                if op.key == concepto_id
+            ),
+            None
+        )
+
+        concepto = opcion.data if opcion else None
+        if concepto:
+            self.txt_unidad_medida.value = concepto.get("unidad_medida", "")
+            self.concepto_id = concepto.get("id", 0)
+            tipo =  concepto.get("tipo_calculo", "")
+            if  tipo =="FORMULA":
+                self.txt_cantidad.disabled = True
+                self.txt_unidad_medida.visible = False
+                self.txt_valor_unidad.visible = False
+            else:
+                self.txt_cantidad.disabled = False
+                self.txt_unidad_medida.visible = True
+                self.txt_valor_unidad.visible = True
+            self.page.update()
+                    
         
-    

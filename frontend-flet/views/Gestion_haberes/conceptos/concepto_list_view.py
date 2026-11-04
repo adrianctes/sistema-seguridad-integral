@@ -351,7 +351,7 @@ class ConceptosListView(ft.Container):
                     "activo": self.chk_activos.value,
                 }
        
-        print(filtro)
+  
         headers = {
             "Authorization": f"Bearer {token}"
         }
@@ -603,17 +603,15 @@ class ConceptosListView(ft.Container):
         self.update()
     
     async def abrir_formulario(self, item):
-
         view = self.page_ref.layout.views.get("crear_concepto")
+      
+        if view is None:
+            return
 
-        # Primero agregar/mostrar la vista
+        await view.set_mode(item["id"] if item is not None else 0)
+
         self.page_ref.layout.change_view("crear_concepto")
-
-        # Ahora la vista ya debería estar asociada al page
-        if item is not None:
-            await view.set_mode(item["id"])
-        else:
-            await view.set_mode(0)
+        #self.page_ref.update()
         
     async def confirmar_eliminar(self, item):
 
@@ -652,7 +650,21 @@ class ConceptosListView(ft.Container):
 
             self.page_ref.update()
 
-           #await self.eliminar_item(item)
+            status_code = await self.api_eliminar(item)
+
+            if   status_code:
+                await self.toast.show(
+                                 self.page_ref,
+                                 "Concepto eliminado",
+                                 "success"
+                             )
+                await self.listar()
+                return    
+            await self.toast.show(
+                self.page,
+                "Error al guardar",
+                "error"
+                ) 
 
         def confirmar():
 
@@ -682,6 +694,24 @@ class ConceptosListView(ft.Container):
             
         self.boton_nuevo.update()
        
+    async def api_eliminar(self, data):
+
+            id=data["id"]
+
+            token = self.page_ref.session.store.get("access_token")
+
+            url = f"{settings.URL_BACKEND}/conceptos/{id}"
+
+            async with httpx.AsyncClient() as client:
+
+                response = await client.delete(
+                    url,
+                    headers={
+                        "Authorization": f"Bearer {token}"
+                    }
+                )
+
+            return response.status_code in (200, 201)
 
 
-        
+            

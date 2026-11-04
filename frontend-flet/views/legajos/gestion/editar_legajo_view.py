@@ -4,7 +4,6 @@ import flet as ft
 import httpx
 
 from views.legajos.shared import CatalogosService
-from core.constants import MODALIDAD_PAGO
 from components.alerts import Toast
 from core.config import settings
 from utils.permisos import tiene_permiso
@@ -87,22 +86,6 @@ class EditarLegajoView(ft.Container):
             expand=True,
             height=COMMON_HEIGHT,
             options=[],
-        )
-        self.ddl_modalidad_pago = ft.Dropdown(
-            label="Modalidad de pago",
-            expand=True,
-            height=COMMON_HEIGHT,
-            options=[],
-            on_select=self.cambio_modalidad_pago
-        )
-        self.txt_valor_modalidad_pago = ft.TextField(
-            label="Valor",
-            height=60,
-            expand=True,
-            value="0.00",
-            max_length=10,
-            keyboard_type=ft.KeyboardType.NUMBER,
-            on_change=self.solo_decimal
         )
         self.txt_telefono = ft.TextField(
             label="Teléfono",
@@ -297,16 +280,6 @@ class EditarLegajoView(ft.Container):
                                         ft.Container(
                                             expand=3,
                                             content=self.ddl_modalidad_liquidacion
-                                        ),
-
-                                        ft.Container(
-                                            expand=2,
-                                            content=self.ddl_modalidad_pago
-                                        ),
-
-                                        ft.Container(
-                                            expand=1,
-                                            content=self.txt_valor_modalidad_pago
                                         )
                                     ]
                                 ),
@@ -407,7 +380,6 @@ class EditarLegajoView(ft.Container):
             await self.cargar_banco()
             await self.cargar_categoria()
             await self.cargar_modalidad_liquidacion()
-            await self.cargar_modalidad_pago()
                 
     
             item =  await self.obtener_legajo_by_id(legajo_id)
@@ -514,9 +486,7 @@ class EditarLegajoView(ft.Container):
                 "activo": self.chk_activo.value,
                 "telefono": self.txt_telefono.value,
                 "banco_id" : self.ddl_banco.value,
-                "cbu": self.txt_cbu.value,
-                "modalidad_pago_id": self.ddl_modalidad_pago.value,
-                "valor_modalidad_pago": self.txt_valor_modalidad_pago.value
+                "cbu": self.txt_cbu.value
             }
 
             ok = await self.api_editar(data)
@@ -603,39 +573,6 @@ class EditarLegajoView(ft.Container):
 
         self.page_ref.update()
 
-    async def cargar_modalidad_pago(self):
-        self.ddl_modalidad_pago.options = [
-
-                ft.dropdown.Option(
-                    key=str(item["id"]),
-                    text=item["nombre"]
-                )
-
-                for item in MODALIDAD_PAGO
-            ]
-
-        self.page_ref.update()
-   
-    def solo_decimal(self, e):
-        valor = e.control.value
-
-        permitido = ""
-
-        separador = False
-
-        for c in valor:
-
-            if c.isdigit():
-                permitido += c
-
-            elif c in [".", ","] and not separador:
-                permitido += "."
-                separador = True
-
-        e.control.value = permitido
-
-        e.control.update()
-
     def solo_numeros(self, e):
 
         limpio = "".join(
@@ -665,8 +602,6 @@ class EditarLegajoView(ft.Container):
         self.ddl_sexo.value = item["sexo"]
         self.ddl_categoria.value = str(item["categoria_id"])
         self.ddl_modalidad_liquidacion.value = str(item["modalidad_liquidacion_id"])
-        self.ddl_modalidad_pago.value = str(item["modalidad_pago_id"])
-        self.txt_valor_modalidad_pago.value = str(item["valor_modalidad_pago"])
         self.txt_telefono.value = item["telefono"]
         self.ddl_banco.value = item["banco_id"]
 
@@ -715,8 +650,6 @@ class EditarLegajoView(ft.Container):
                     "telefono": data.get("telefono", ""),
                     "activo": data.get("activo", True),
                     "sac":  data.get("sac", False),
-                    "modalidad_pago_id" : data.get("modalidad_pago_id"),
-                    "valor_modalidad_pago" : data.get("valor_modalidad_pago"),
                     "banco_id" : data.get("banco_id")
                 }
         
@@ -734,13 +667,3 @@ class EditarLegajoView(ft.Container):
             )
     
             self.boton_guardar.update()
-
-    def cambio_modalidad_pago(self, e):
-    
-            modalidad_pago = int(e.control.value)
-    
-            self.txt_valor_modalidad_pago.disabled = modalidad_pago == 1
-            if modalidad_pago == 1:
-                self.txt_valor_modalidad_pago.value = "1.00"
-    
-            self.txt_valor_modalidad_pago.update()

@@ -678,11 +678,8 @@ class LegajosView(ft.Container):
             )'''
     async def abrir_detalle(self, item):
         gestion = self.page_ref.layout.views["gestion_legajo"]
-        #gestion = self.page_ref.layout.views.get('gestion_legajo')
         gestion.set_legajo(item)
         self.page_ref.layout.change_view("gestion_legajo" )
-
-        #await gestion.load()
     
     async def eliminar_item(self, item):
 

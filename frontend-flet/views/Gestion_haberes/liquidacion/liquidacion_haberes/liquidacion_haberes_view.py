@@ -379,6 +379,9 @@ class LiquidacionDeHaberesView(ft.Container):
     
     async def listar(self, e=None):
 
+        if self.cmb_datos_fijos.value is None:
+            return
+
         token = self.page.session.store.get("access_token")
 
         if not token:

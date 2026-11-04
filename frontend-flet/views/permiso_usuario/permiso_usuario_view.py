@@ -485,7 +485,7 @@ class PermisoUsuarioView(ft.Container):
     # =========================================================
 
     def cambiar_rol(self, e):
-        print(self.rol)
+       
         self.rol = e.control.value
 
         self.page_ref.run_task(

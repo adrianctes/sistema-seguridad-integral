@@ -21,7 +21,6 @@ class GestionLegajoLayout(ft.Container):
         self.current_key = "editar"
 
         self.legajo_id = None
-        self.modalidad_pago_id = 0
 
         self.ayn = ""
 

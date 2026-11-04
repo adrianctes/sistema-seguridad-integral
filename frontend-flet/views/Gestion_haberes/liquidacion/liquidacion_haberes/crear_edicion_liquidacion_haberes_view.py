@@ -1287,7 +1287,7 @@ class LiquidacionHaberesAltaEdicionView(ft.Container):
 
             self.page_ref.update()'''
 
- 
+
     async def liquidar(self, e):
 
         # =====================================================
