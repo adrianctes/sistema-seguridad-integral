@@ -148,7 +148,6 @@ class NovedadesView(ft.Container):
 
                 ft.DataColumn(ft.Text("Apellido y nombre", size=11)),
 
-
                 ft.DataColumn(ft.Text("Código", size=11)),
 
                 ft.DataColumn(ft.Text("Concepto", size=11)),
