@@ -61,6 +61,7 @@ class LiquidacionDeHaberesView(ft.Container):
         self.cmb_datos_fijos = ft.Dropdown(
             label="Datos fijos liquidacion",
             expand= True,
+            menu_height=300,
             height=36,
             text_size=12,
             options=[]
@@ -469,7 +470,7 @@ class LiquidacionDeHaberesView(ft.Container):
         self.permiso_eliminar= tiene_permiso(self.page_ref, "SUELDOS_LIQUIDACION_LIQUIDACIONES_ELIMINAR")
         self.actualizar_boton_nuevo()
     
-        await self.cargar_datos_fijos_abiertos()
+        await self.cargar_datos_fijos()
     
 
 
@@ -821,7 +822,7 @@ class LiquidacionDeHaberesView(ft.Container):
 
             return False
     
-    async def cargar_datos_fijos_abiertos(self):
+    async def cargar_datos_fijos(self):
 
         token = self.page.session.store.get("access_token")
     
@@ -835,7 +836,7 @@ class LiquidacionDeHaberesView(ft.Container):
 
             return
         params = {}   
-        params["estado"] = "ABIERTO"
+        #params["estado"] = "ABIERTO"
 
         headers = {
             "Authorization": f"Bearer {token}"
